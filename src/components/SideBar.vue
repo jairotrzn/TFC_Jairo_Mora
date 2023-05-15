@@ -61,8 +61,9 @@ export default {
       { icon: "mdi mdi-home", to: "/", text: "Home" },
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
       { icon: "mdi mdi-home", to: "repuestos", text: "Repuestos" },
-      { icon: "mdi mdi-home", text: "Item 4" },
-      { icon: "mdi mdi-home", text: "Item 5" },
+      { icon: "mdi mdi-home", to:"tareas", text: "Tareas" },
+      { icon: "mdi mdi-home", text: "Preventivos" },
+       { icon: "mdi mdi-home", text: "Averias" },
     ],
   }),
 
