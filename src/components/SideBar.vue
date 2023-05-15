@@ -60,10 +60,10 @@ export default {
     items: [
       { icon: "mdi mdi-home", to: "/", text: "Home" },
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
-      { icon: "mdi mdi-home", to: "repuestos", text: "Repuestos" },
-      { icon: "mdi mdi-home", to:"tareas", text: "Tareas" },
-      { icon: "mdi mdi-home", text: "Preventivos" },
-       { icon: "mdi mdi-home", text: "Averias" },
+      { icon: "build", to: "repuestos", text: "Repuestos" },
+      { icon: "mdi mdi-calendar-check", to:"tareas", text: "Tareas" },
+      { icon: "mdi mdi-file-document", text: "Ordenes de trabajo" },
+       { icon: "mdi mdi-alert", text: "Averias" },
     ],
   }),
 
@@ -79,8 +79,14 @@ export default {
   color: white !important;
 }
 .material-symbols-rounded:before {
-  content: "\E048";
+  content: "\E049";
   font-family: "precision_manufacturing";
   font-size: 24px;
 }
+.material-symbols-rounded:before {
+  content: "\E049";
+  font-family: "build";
+  font-size: 24px;
+}
+
 </style>

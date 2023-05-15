@@ -17,9 +17,6 @@
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="12" sm="3">
-          <Doctor />
-        </v-col>
       </v-row>
     </v-container>
   </v-app>
