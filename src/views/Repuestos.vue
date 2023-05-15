@@ -13,12 +13,12 @@
               <Contact />
             </v-col>
             <v-col cols="12" sm="12">
-            <Agenda />
+              <TableCrudRepuestos />
             </v-col>
           </v-row>
         </v-col>
         <v-col cols="12" sm="3">
-            <Doctor />
+          <Doctor />
         </v-col>
       </v-row>
     </v-container>
@@ -30,20 +30,18 @@
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
-import Agenda from "../components/Agenda.vue";
 import Doctor from "../components/Doctor.vue";
+import TableCrudRepuestos from "../components/TableCRUDRepuestos.vue";
 
 export default {
-  data: () => ({
-    
-  }),
- 
+  data: () => ({}),
+
   components: {
     SideBar,
     Navbar,
     Contact,
-    Agenda,
     Doctor,
-},
+    TableCrudRepuestos, 
+  },
 };
 </script>
