@@ -58,11 +58,12 @@ export default {
     selectedItem: null,
     drawer: null,
     items: [
-      { icon: "mdi mdi-home", to: "/", text: "Home" },
+      { icon: "mdi-home", to: "/", text: "Home" },
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
-      { icon: "mdi mdi-home", to: "repuestos", text: "Repuestos" },
-      { icon: "mdi mdi-home", text: "Item 4" },
-      { icon: "mdi mdi-home", text: "Item 5" },
+      { icon: "build", to: "repuestos", text: "Repuestos" },
+      { icon: "mdi-calendar-check", to:"tareas", text: "Tareas" },
+      { icon: "mdi-tools", text: "Preventivos" },
+       { icon: " mdi-alert", text: "Averias" },
     ],
   }),
 
@@ -78,8 +79,14 @@ export default {
   color: white !important;
 }
 .material-symbols-rounded:before {
-  content: "\E048";
+  content: "\E049";
   font-family: "precision_manufacturing";
   font-size: 24px;
 }
+.material-symbols-rounded:before {
+  content: "\E049";
+  font-family: "build";
+  font-size: 24px;
+}
+
 </style>
