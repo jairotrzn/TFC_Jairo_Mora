@@ -25,7 +25,11 @@
       @click="selectedMachine = item"
     >
       <template v-slot:item.actions="{ item }">
-        <v-icon small class="mr-2" color="red" @click="deleteMachine(item)"
+        <v-icon
+          small
+          class="mr-2"
+          color="red"
+          @click="(dialogDelete = true), (selectedMachine = item)"
           >mdi-delete</v-icon
         >
         <v-icon
@@ -44,7 +48,7 @@
     <v-dialog v-model="dialogUpdate">
       <v-card>
         <v-container>
-          <v-form @submit.prevent="updateMachine(selectedMachine)">
+          <v-form>
             <p><b>CARACTERISTICAS TÉCNICAS</b></p>
             <v-row>
               <v-col cols="6">
@@ -215,10 +219,9 @@
               label="Agregar una imagen"
             ></v-file-input>
             <v-btn
-              type="submit"
               color="primary"
               class="mr-4"
-              @click.stop="dialogUpdate = false"
+              @click="dialogoConfirmUpdate = true"
               >Guardar Cambios</v-btn
             >
             <v-btn color="primary" class="mr-4" @click="dialogUpdate = false"
@@ -244,8 +247,6 @@
                   v-model="type"
                   :error-messages="typeErrors"
                   required
-                  @input="$v.type.$touch()"
-                  @blur="$v.type.$touch()"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -486,6 +487,7 @@
               v-model="image"
               accept="image/*"
               label="Agregar una imagen"
+              @change="convertToBinary"
             ></v-file-input>
             <v-btn
               type="submit"
@@ -498,21 +500,90 @@
         </v-container>
       </v-card>
     </v-dialog>
+
+    <!-- Modal Confirmar Eliminar -->
+    <v-dialog v-model="dialogDelete" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Confirmar Eliminación</v-card-title>
+        <v-card-text
+          >¿Estás seguro de que deseas eliminar este elemento?</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="dialogDelete = false"
+            >Cancelar</v-btn
+          >
+          <v-btn
+            color="green darken-1"
+            text
+            @click="deleteMachine(selectedMachine), (dialogDelete = false)"
+            >Aceptar</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modal Confirmar upDate -->
+    <v-dialog v-model="dialogoConfirmUpdate" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Confirmar Modificación</v-card-title>
+        <v-card-text
+          >¿Estás seguro de que deseas modificar este elemento?</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="dialogoConfirmDlete = false"
+            >Cancelar</v-btn
+          >
+          <v-btn
+            color="green darken-1"
+            text
+            @click="
+              updateMachine(selectedMachine);
+              (dialogoConfirmUpdate = false), (dialogUpdate = false);
+            "
+            >Aceptar</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script>
+/**
+ * @fileoverview Machines Component
+ * @module Machines
+ */
+
 import { updateDoc } from "firebase/firestore";
-import { db, collection, getDocs, addDoc, deleteDoc, doc } from "../main";
+import {
+  db,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+} from "../main";
 
 export default {
-  data() { 
+  /**
+   * Component data.
+   * @returns {Object} Machines component data object.
+   */
+  data() {
     return {
+      dialogDelete: false,
+      dialogConfirmUpdate: false,
       search: "",
       dialog: false,
       machines: [],
       dialogUpdate: false,
       typeErrors: [],
+
+      binaryData: null,
 
       selectedMachine: [],
       item: null,
@@ -541,27 +612,55 @@ export default {
 
       headers: [
         {
-          text: "Cod.Maquina",
+          text: "Machine Code",
           align: "start",
           filterable: false,
           value: "machineCode",
         },
-        { text: "Tipo", value: "type" },
-        { text: "Ubicación", align: "center", value: "location" },
+        { text: "Type", value: "type" },
+        { text: "Location", align: "center", value: "location" },
         {
-          text: "Potencia Motor Principal",
+          text: "Main Motor Power",
           align: "center",
           value: "mainMotorPower",
         },
-        { text: "Velocidad Máxima", align: "center", value: "maximumSpeed" },
-        { text: "Acciones", value: "actions" },
+        { text: "Maximum Speed", align: "center", value: "maximumSpeed" },
+        { text: "Actions", value: "actions" },
       ],
     };
   },
+  /**
+   * Method called when the component is created.
+   * @returns {void}
+   */
   created() {
     this.getMachines();
   },
   methods: {
+    /**
+     * Convert the selected image to binary.
+     * @returns {void}
+     */
+    convertToBinary() {
+      const file = this.image;
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const binary = reader.result;
+          const binaryString = btoa(
+            String.fromCharCode(...new Uint8Array(binary))
+          );
+          this.binaryData = binaryString;
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    },
+    /**
+     * Update a machine.
+     * @param {Object} selectedMachine - The selected machine object.
+     * @returns {void}
+     */
     async updateMachine(selectedMachine) {
       try {
         const docRef = doc(db, "machines", selectedMachine.id);
@@ -587,12 +686,20 @@ export default {
           minimumTransversalFeed: selectedMachine.minimumTransversalFeed,
           minimumVerticalFeed: selectedMachine.minimumVerticalFeed,
         });
+
+        this.dialogConfirmUpdate = false;
+        this.dialogUpdate = false;
+        this.selectedMachine = [];
         this.getMachines();
       } catch (error) {
-        console.log(error);
+        console.error("Error updating machine: ", error);
       }
     },
-
+    /**
+     * Delete a machine.
+     * @param {Object} item - The machine object to delete.
+     * @returns {void}
+     */
     async deleteMachine(item) {
       try {
         const docRef = doc(db, "machines", item.id);
@@ -602,6 +709,10 @@ export default {
         console.log(error);
       }
     },
+    /**
+     * Retrieve the list of machines from the database.
+     * @returns {void}
+     */
     async getMachines() {
       try {
         const snapshot = await getDocs(collection(db, "machines"));
@@ -618,97 +729,133 @@ export default {
         console.log(error);
       }
     },
+    /**
+     * Initialize form fields.
+     * @returns {void}
+     */
+    inizialite() {
+      this.image = null;
+      this.type = null;
+      this.location = null;
+      this.machineCode = null;
+      this.department = null;
+      this.mainMotorPower = null;
+      this.feedMotorPower = null;
+      this.pumpMotorPower = null;
+      this.current = null;
+      this.maximumSpeed = null;
+      this.minimumSpeed = null;
+      this.numberOfSpeeds = null;
+      this.maximumLongitudinalFeed = null;
+      this.numberOfLongitudinalFeeds = null;
+      this.maximumTransversalFeed = null;
+      this.numberOfTransversalFeeds = null;
+      this.maximumVerticalFeed = null;
+      this.numberOfVerticalFeeds = null;
+      this.minimumLongitudinalFeed = null;
+      this.minimumTransversalFeed = null;
+      this.minimumVerticalFeed = null;
+    },
+    /**
+     * Add a new machine to the database.
+     * @returns {void}
+     */
     async addMachine() {
-  try {
-    if (
-      !camposVacios(
-        //this.image,
-        this.type,
-        this.location,
-        this.machineCode,
-        this.department,
-        this.mainMotorPower,
-        this.feedMotorPower,
-        this.pumpMotorPower,
-        this.current,
-        this.maximumSpeed,
-        this.minimumSpeed,
-        this.numberOfSpeeds,
-        this.maximumLongitudinalFeed,
-        this.numberOfLongitudinalFeeds,
-        this.maximumTransversalFeed,
-        this.numberOfTransversalFeeds,
-        this.maximumVerticalFeed,
-        this.numberOfVerticalFeeds,
-        this.minimumLongitudinalFeed,
-        this.minimumTransversalFeed,
-        this.minimumVerticalFeed
-      )
-    ) {
-      const querySnapshot = await getDocs(
-        query(collection(db, "machines"), where("machineCode", "==", this.machineCode))
-      );
-      if (querySnapshot.size === 0) {
-        await addDoc(collection(db, "machines"), {
-          // image: this.image,
-          type: this.type,
-          location: this.location,
-          machineCode: this.machineCode,
-          department: this.department,
-          mainMotorPower: this.mainMotorPower,
-          feedMotorPower: this.feedMotorPower,
-          pumpMotorPower: this.pumpMotorPower,
-          current: this.current,
-          maximumSpeed: this.maximumSpeed,
-          minimumSpeed: this.minimumSpeed,
-          numberOfSpeeds: this.numberOfSpeeds,
-          maximumLongitudinalFeed: this.maximumLongitudinalFeed,
-          numberOfLongitudinalFeeds: this.numberOfLongitudinalFeeds,
-          maximumTransversalFeed: this.maximumTransversalFeed,
-          numberOfTransversalFeeds: this.numberOfTransversalFeeds,
-          maximumVerticalFeed: this.maximumVerticalFeed,
-          numberOfVerticalFeeds: this.numberOfVerticalFeeds,
-          minimumLongitudinalFeed: this.minimumLongitudinalFeed,
-          minimumTransversalFeed: this.minimumTransversalFeed,
-          minimumVerticalFeed: this.minimumVerticalFeed,
-        });
-        this.getMachines();
-      } else {
-        console.log("Ya existe una máquina con el mismo machineCode");
+      console.log("voy a agregar maquina");
+      try {
+        if (
+          !camposVacios(
+            this.image,
+            this.type,
+            this.location,
+            this.machineCode,
+            this.department,
+            this.mainMotorPower,
+            this.feedMotorPower,
+            this.pumpMotorPower,
+            this.current,
+            this.maximumSpeed,
+            this.minimumSpeed,
+            this.numberOfSpeeds,
+            this.maximumLongitudinalFeed,
+            this.numberOfLongitudinalFeeds,
+            this.maximumTransversalFeed,
+            this.numberOfTransversalFeeds,
+            this.maximumVerticalFeed,
+            this.numberOfVerticalFeeds,
+            this.minimumLongitudinalFeed,
+            this.minimumTransversalFeed,
+            this.minimumVerticalFeed
+          )
+        ) {
+          const querySnapshot = await getDocs(
+            query(
+              collection(db, "machines"),
+              where("machineCode", "==", this.machineCode)
+            )
+          );
+          if (querySnapshot.size === 0) {
+            await addDoc(collection(db, "machines"), {
+              image: this.binaryData,
+              type: this.type,
+              location: this.location,
+              machineCode: this.machineCode,
+              department: this.department,
+              mainMotorPower: this.mainMotorPower,
+              feedMotorPower: this.feedMotorPower,
+              pumpMotorPower: this.pumpMotorPower,
+              current: this.current,
+              maximumSpeed: this.maximumSpeed,
+              minimumSpeed: this.minimumSpeed,
+              numberOfSpeeds: this.numberOfSpeeds,
+              maximumLongitudinalFeed: this.maximumLongitudinalFeed,
+              numberOfLongitudinalFeeds: this.numberOfLongitudinalFeeds,
+              maximumTransversalFeed: this.maximumTransversalFeed,
+              numberOfTransversalFeeds: this.numberOfTransversalFeeds,
+              maximumVerticalFeed: this.maximumVerticalFeed,
+              numberOfVerticalFeeds: this.numberOfVerticalFeeds,
+              minimumLongitudinalFeed: this.minimumLongitudinalFeed,
+              minimumTransversalFeed: this.minimumTransversalFeed,
+              minimumVerticalFeed: this.minimumVerticalFeed,
+            });
+            this.inizialite();
+            this.getMachines();
+          } else {
+            console.log("Ya existe una máquina con el mismo machineCode");
+          }
+        } else {
+          console.log("los campos estan vacios");
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } else {
-      console.log("los campos estan vacios");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-},
+    },
   },
 };
-
-function inizialite() {
-  image: null;
-  type: null;
-  location: null;
-  machineCode: null;
-  department: null;
-  mainMotorPower: null;
-  feedMotorPower: null;
-  pumpMotorPower: null;
-  current: null;
-  maximumSpeed: null;
-  minimumSpeed: null;
-  numberOfSpeeds: null;
-  maximumLongitudinalFeed: null;
-  numberOfLongitudinalFeeds: null;
-  maximumTransversalFeed: null;
-  numberOfTransversalFeeds: null;
-  maximumVerticalFeed: null;
-  numberOfVerticalFeeds: null;
-  minimumLongitudinalFeed: null;
-  minimumTransversalFeed: null;
-  minimumVerticalFeed: null;
-}
+/**
+ * Check if any of the fields is empty.
+ * @param {string} type - The type field value.
+ * @param {string} location - The location field value.
+ * @param {string} machineCode - The machineCode field value.
+ * @param {string} department - The department field value.
+ * @param {string} mainMotorPower - The mainMotorPower field value.
+ * @param {string} feedMotorPower - The feedMotorPower field value.
+ * @param {string} pumpMotorPower - The pumpMotorPower field value.
+ * @param {string} current - The current field value.
+ * @param {string} maximumSpeed - The maximumSpeed field value.
+ * @param {string} minimumSpeed - The minimumSpeed field value.
+ * @param {string} numberOfSpeeds - The numberOfSpeeds field value.
+ * @param {string} maximumLongitudinalFeed - The maximumLongitudinalFeed field value.
+ * @param {string} numberOfLongitudinalFeeds - The numberOfLongitudinalFeeds field value.
+ * @param {string} maximumTransversalFeed - The maximumTransversalFeed field value.
+ * @param {string} numberOfTransversalFeeds - The numberOfTransversalFeeds field value.
+ * @param {string} maximumVerticalFeed - The maximumVerticalFeed field value.
+ * @param {string} numberOfVerticalFeeds - The numberOfVerticalFeeds field value.
+ * @param {string} minimumLongitudinalFeed - The minimumLongitudinalFeed field value.
+ * @param {string} minimumTransversalFeed - The minimumTransversalFeed field value.
+ * @param {string} minimumVerticalFeed - The minimumVerticalFeed field value.
+ * @returns {boolean} True if any field is empty, false otherwise.
+ */
 function camposVacios(
   //image,
   type,
@@ -733,7 +880,7 @@ function camposVacios(
   minimumVerticalFeed
 ) {
   if (
-    // image === "" ||
+    image === "" ||
     type.value === "" ||
     location.value === "" ||
     machineCode.value === "" ||

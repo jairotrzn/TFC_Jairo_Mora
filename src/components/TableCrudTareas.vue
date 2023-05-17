@@ -142,11 +142,11 @@
       </v-card>
     </v-dialog>
 
-    <!-- Modal Agregar Tarea -->
+    <!--Modal dialogo crear tarea-->
     <v-dialog v-model="dialogCreatTarea">
       <v-card>
         <v-container>
-          <v-form @submit.prevent="addTarea">
+          <v-form ref="form" @submit.prevent="addTarea">
             <p><b>CREAR NUEVA TAREA</b></p>
 
             <v-row>
@@ -155,6 +155,7 @@
                   type="text"
                   label="Agregar nombre de tarea"
                   v-model="nameTarea"
+                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -162,6 +163,7 @@
                   type="text"
                   label="Categoria"
                   v-model="category"
+                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -171,7 +173,7 @@
                   v-model="selectedFrencunce"
                   :items="frecuencias"
                   label="Selecciona una frecuencia"
-                  :filter="customFilter"
+                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-combobox>
               </v-col>
               <v-col cols="6">
@@ -218,31 +220,30 @@
                     </template>
                   </v-data-table>
                 </v-card>
-      
+
                 <v-data-table
-    v-model="selectedRepuesto"
-    :headers="headersTablaRepuestos"
-    :items="filteredRepuestos"
-    :single-select="singleSelect"
-    item-key="idRepuesto"
-    show-select
-    class="elevation-1"
-  >
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>Repuestos</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-text-field
-          v-model="searchRepuestos"
-          append-icon="mdi-magnify"
-          label="Buscar"
-          single-line
-          hide-details
-        ></v-text-field>
-      </v-toolbar>
-    </template>
-  </v-data-table>
-     
+                  v-model="selectedRepuesto"
+                  :headers="headersTablaRepuestos"
+                  :items="filteredRepuestos"
+                  :single-select="singleSelect"
+                  item-key="idRepuesto"
+                  show-select
+                  class="elevation-1"
+                >
+                  <template v-slot:top>
+                    <v-toolbar flat>
+                      <v-toolbar-title>Repuestos</v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-text-field
+                        v-model="searchRepuestos"
+                        append-icon="mdi-magnify"
+                        label="Buscar"
+                        single-line
+                        hide-details
+                      ></v-text-field>
+                    </v-toolbar>
+                  </template>
+                </v-data-table>
               </v-col>
             </v-row>
 
@@ -251,18 +252,9 @@
                 type="submit"
                 color="primary"
                 class="mr-4"
-                @click.stop="dialogCreatTarea = false"
+                @click.stop="validateForm"
                 >Crear Nueva Tarea</v-btn
-              > 
-
-              <v-btn
-                color="primary"
-                class="mr-4"
-                @click="mostrarDatosRepuestos"
-                >Ver datos repuestos</v-btn
               >
-
-
             </v-row>
             <br />
           </v-form>
@@ -364,8 +356,8 @@ export default {
         { text: "Proveedor", align: "center", value: "provaiderRepuesto" },
       ],
 
-      headersRepuesto:[
-      {
+      headersRepuesto: [
+        {
           text: "Identificador",
           align: "start",
           filterable: false,
@@ -408,6 +400,9 @@ export default {
     },
   },
   methods: {
+    validateForm() {
+      this.$refs.form.validate();
+    },
     mostrarDatosRepuestos() {
       const nombresSeleccionados = [];
       this.selectedRepuesto.forEach((item) => {
@@ -417,7 +412,9 @@ export default {
     },
 
     updateSelectedItems() {
-      this.selectedRepuestos = this.repuestosDB.filter(item => item.isSelected);
+      this.selectedRepuestos = this.repuestosDB.filter(
+        (item) => item.isSelected
+      );
     },
     sendItem(item) {
       console.log(item.category);
@@ -481,7 +478,7 @@ export default {
         snapshot.forEach((doc) => {
           let tareasData = doc.data();
           tareasData.id = doc.id;
-          tareasDb.push(tareasData); // Corrección aquí
+          tareasDb.push(tareasData); 
         });
 
         this.tareas = tareasDb;
@@ -504,27 +501,25 @@ export default {
             category: this.category,
             selectedFrencunce: this.selectedFrencunce,
             datos: this.datos,
-            repuestos:this.selectedRepuesto
+            repuestos: this.selectedRepuesto,
           });
-          this.getTareas();
-          inizialite();
         } else {
           console.log("los campos estan vacios");
         }
       } catch (error) {
         console.log(error);
       }
+      this.getTareas();
+      this.inizialite();
     },
-  },
-};
-
-function inizialite() {
-  nameTarea: null;
-  category: null;
-  selectedFrencunce: null;
-  datos: null;
-}
-function camposVacios(nameTarea, category, selectedFrencunce, datos) {
+    inizialite() {
+      this.nameTarea = "";
+      this.category = "";
+      this.selectedFrencunce = "";
+      this.datos = "";
+      this.selectedRepuesto = [];
+    },
+    camposVacios(nameTarea, category, selectedFrencunce, datos) {
   if (
     nameTarea.value === "" ||
     category.value === "" ||
@@ -536,4 +531,8 @@ function camposVacios(nameTarea, category, selectedFrencunce, datos) {
     return false;
   }
 }
+  },
+};
+
+ 
 </script>
