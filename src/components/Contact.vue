@@ -6,7 +6,8 @@
                       <v-row>
                         <v-col cols="12" sm="4">
                           <v-avatar color="#DFEDFF" tile>
-                            <v-img src="p1.png" />
+                            <!--Aqui hay que colocar la imagen-->
+                            <v-img  />
                           </v-avatar>
                         </v-col>
                         <v-col cols="12" sm="8">
