@@ -30,7 +30,7 @@
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
-import Doctor from "../components/Doctor.vue";
+import Doctor from "../components/DataPicker.vue";
 import TableCrudMachine from "../components/TableCrudMachines.vue";
 
 export default {

@@ -1,6 +1,5 @@
 <template>
   <v-app-bar color="white" app dark flat>
-    <v-icon color="black" @click="showLogoutDialog">fas fa-long-arrow-alt-left</v-icon>
     <h4 class="black--text ml-3">Mantenimientos Tubalcain</h4>
     
     <v-spacer></v-spacer>

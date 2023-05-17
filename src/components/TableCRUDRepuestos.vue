@@ -191,8 +191,9 @@ export default {
       ],
     };
   }, 
+
   created() {
-    this.getMachines();
+    this.getRepuestos();
   },
   methods: {
     async updateRepuesto(selectedRepuesto) {
@@ -214,12 +215,12 @@ export default {
       try {
         const docRef = doc(db, "repuestos", item.id);
         await deleteDoc(docRef);
-        this.getMachines();
+        this.getRepuestos();
       } catch (error) {
         console.log(error);
       }
     },
-    async getMachines() {
+    async getRepuestos() {
       try {
         const snapshot = await getDocs(collection(db, "repuestos"));
         const repuestos = [];
@@ -253,7 +254,7 @@ export default {
             provaiderRepuesto:this.provaiderRepuesto,
 
           });
-          this.getMachines();
+          this.getRepuestos();
           inizialite();
         } else {
           console.log("los campos estan vacios");

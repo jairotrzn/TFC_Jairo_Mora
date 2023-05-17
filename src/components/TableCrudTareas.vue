@@ -16,7 +16,7 @@
             fab
             dark
             color="indigo"
-            @click="dialogCreatTarea = true"
+            @click="(dialogCreatTarea = true), getRepuestos()"
           >
             <v-icon dark>mdi-plus</v-icon>
           </v-btn>
@@ -28,7 +28,7 @@
       :headers="headers"
       :items="tareas"
       :search="search"
-      @click="selectedTarea = item, enviarItem(selectedTarea)"
+      @click:row="(selectedTarea = $event), sendItem(selectedTarea)"
     >
       <template v-slot:item.actions="{ item }">
         <v-icon
@@ -54,7 +54,7 @@
     <v-dialog v-model="dialogUpDateTarea">
       <v-card>
         <v-container>
-          <v-form @submit.prevent="dialogoConfirmDlete=true">
+          <v-form @submit.prevent="dialogoConfirmDlete = true">
             <p><b>MODIFICAR TAREA</b></p>
 
             <v-row>
@@ -109,7 +109,6 @@
                   </v-card-title>
 
                   <v-data-table
-                    :headers="tableHeaders"
                     :items="selectedTarea.datos"
                     hide-default-footer
                     class="elevation-1"
@@ -128,19 +127,22 @@
                 </v-card>
               </v-col>
             </v-row>
-            <v-btn
-              type="submit"
-              color="primary"
-              class="mr-4"
-              @click.stop="dialog = false"
-              >Guardar cambios</v-btn
-            >
+            <v-row>
+              <v-btn
+                type="submit"
+                color="primary"
+                class="mr-4"
+                @click.stop="dialog = false"
+                >Guardar cambios</v-btn
+              >
+            </v-row>
+            <br />
           </v-form>
         </v-container>
       </v-card>
     </v-dialog>
 
-    <!-- Modal Agregar Repuesto -->
+    <!-- Modal Agregar Tarea -->
     <v-dialog v-model="dialogCreatTarea">
       <v-card>
         <v-container>
@@ -169,6 +171,7 @@
                   v-model="selectedFrencunce"
                   :items="frecuencias"
                   label="Selecciona una frecuencia"
+                  :filter="customFilter"
                 ></v-combobox>
               </v-col>
               <v-col cols="6">
@@ -199,7 +202,6 @@
                   </v-card-title>
 
                   <v-data-table
-                    :headers="tableHeaders"
                     :items="datos"
                     hide-default-footer
                     class="elevation-1"
@@ -216,15 +218,53 @@
                     </template>
                   </v-data-table>
                 </v-card>
+      
+                <v-data-table
+    v-model="selectedRepuesto"
+    :headers="headersTablaRepuestos"
+    :items="filteredRepuestos"
+    :single-select="singleSelect"
+    item-key="idRepuesto"
+    show-select
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title>Repuestos</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-text-field
+          v-model="searchRepuestos"
+          append-icon="mdi-magnify"
+          label="Buscar"
+          single-line
+          hide-details
+        ></v-text-field>
+      </v-toolbar>
+    </template>
+  </v-data-table>
+     
               </v-col>
             </v-row>
-            <v-btn
-              type="submit"
-              color="primary"
-              class="mr-4"
-              @click.stop="dialogCreatTarea = false"
-              >Crear Nueva Tarea</v-btn
-            >
+
+            <v-row>
+              <v-btn
+                type="submit"
+                color="primary"
+                class="mr-4"
+                @click.stop="dialogCreatTarea = false"
+                >Crear Nueva Tarea</v-btn
+              > 
+
+              <v-btn
+                color="primary"
+                class="mr-4"
+                @click="mostrarDatosRepuestos"
+                >Ver datos repuestos</v-btn
+              >
+
+
+            </v-row>
+            <br />
           </v-form>
         </v-container>
       </v-card>
@@ -252,7 +292,7 @@
       </v-card>
     </v-dialog>
 
-     <!-- Modal Confirmar upDate -->
+    <!-- Modal Confirmar upDate -->
     <v-dialog v-model="dialogoConfirmDlete" max-width="500px">
       <v-card>
         <v-card-title class="headline">Confirmar Modificación</v-card-title>
@@ -267,28 +307,36 @@
           <v-btn
             color="green darken-1"
             text
-            @click="updateTare(selectedTarea), (dialogoConfirmDlete = false),dialogUpDateTarea=false"
+            @click="
+              updateTare(selectedTarea),
+                (dialogoConfirmDlete = false),
+                (dialogUpDateTarea = false)
+            "
             >Aceptar</v-btn
           >
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </v-card>
 </template>
 
 <script>
 import { updateDoc } from "firebase/firestore";
 import { db, collection, getDocs, addDoc, deleteDoc, doc } from "../main";
+import eventBus from "@/config/eventBus";
 
 export default {
   data() {
     return {
+      singleSelect: false,
+      repuestos: [],
+      searchRepuestos: "",
+      selectedRepuesto: [],
       search: "",
       dialogCreatTarea: false,
       machines: [],
       dialogUpDateTarea: false,
-      dialogoConfirmDlete:false,
+      dialogoConfirmDlete: false,
       typeErrors: [],
       dialogDelete: false,
       datos: [],
@@ -304,8 +352,33 @@ export default {
       selectedFrencunce: "",
       frecuencias: ["Diaria", "Semanal", "Quincenal", "Mensual"],
 
-      //Atributo para enviar informacion de un componente a otro
-      
+      headersTablaRepuestos: [
+        {
+          text: "Identificador",
+          align: "start",
+          filterable: false,
+          value: "idRepuesto",
+        },
+        { text: "Nombre", value: "nameRepuesto" },
+        { text: "Precio €", align: "center", value: "priceRepuesto" },
+        { text: "Proveedor", align: "center", value: "provaiderRepuesto" },
+      ],
+
+      headersRepuesto:[
+      {
+          text: "Identificador",
+          align: "start",
+          filterable: false,
+          value: "idRepuesto",
+        },
+        { text: "Nombre", value: "nameRepuesto" },
+        { text: "Precio €", align: "center", value: "priceRepuesto" },
+        {
+          text: "Proveedor",
+          align: "center",
+          value: "provaiderRepuesto",
+        },
+      ],
       headers: [
         {
           text: "Nombre",
@@ -321,11 +394,34 @@ export default {
   },
   created() {
     this.getTareas();
+    this.getRepuestos();
+  },
+  computed: {
+    filteredRepuestos() {
+      return this.repuestos.filter((repuesto) => {
+        const searchTerm = this.search.toLowerCase();
+        return (
+          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+          repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+        );
+      });
+    },
   },
   methods: {
-    enviarItem(item){
-      console.log("Voy a enviar el item " + item)
-      this.$emit('item-selected',item)
+    mostrarDatosRepuestos() {
+      const nombresSeleccionados = [];
+      this.selectedRepuesto.forEach((item) => {
+        nombresSeleccionados.push(item.nameRepuesto);
+      });
+      console.log("Nombres seleccionados:", nombresSeleccionados);
+    },
+
+    updateSelectedItems() {
+      this.selectedRepuestos = this.repuestosDB.filter(item => item.isSelected);
+    },
+    sendItem(item) {
+      console.log(item.category);
+      eventBus.$emit("item-selected", item);
     },
     deleteDato(item) {
       const index = this.datos.indexOf(item);
@@ -361,6 +457,22 @@ export default {
         console.log(error);
       }
     },
+    async getRepuestos() {
+      try {
+        const snapshot = await getDocs(collection(db, "repuestos"));
+        const repuestos = [];
+
+        snapshot.forEach((doc) => {
+          let repuestosData = doc.data();
+          repuestosData.id = doc.id;
+          repuestos.push(repuestosData);
+        });
+
+        this.repuestos = repuestos;
+      } catch (error) {
+        console.log(error);
+      }
+    },
     async getTareas() {
       try {
         const snapshot = await getDocs(collection(db, "tareas"));
@@ -372,7 +484,6 @@ export default {
           tareasDb.push(tareasData); // Corrección aquí
         });
 
-        console.log(tareasDb);
         this.tareas = tareasDb;
       } catch (error) {
         console.log(error);
@@ -393,6 +504,7 @@ export default {
             category: this.category,
             selectedFrencunce: this.selectedFrencunce,
             datos: this.datos,
+            repuestos:this.selectedRepuesto
           });
           this.getTareas();
           inizialite();
