@@ -58,12 +58,12 @@ export default {
     selectedItem: null,
     drawer: null,
     items: [
-      { icon: "mdi mdi-home", to: "/", text: "Home" },
+      { icon: "mdi-home", to: "/", text: "Home" },
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
       { icon: "build", to: "repuestos", text: "Repuestos" },
-      { icon: "mdi mdi-calendar-check", to:"tareas", text: "Tareas" },
-      { icon: "mdi mdi-file-document", text: "Ordenes de trabajo" },
-       { icon: "mdi mdi-alert", text: "Averias" },
+      { icon: "mdi-calendar-check", to:"tareas", text: "Tareas" },
+      { icon: "mdi-tools", text: "Preventivos" },
+       { icon: " mdi-alert", text: "Averias" },
     ],
   }),
 
