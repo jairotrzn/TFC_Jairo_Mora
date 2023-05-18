@@ -11,12 +11,13 @@
       <v-spacer></v-spacer>
       <template>
         <div class="text-center">
+        
           <v-btn
             class="mx-2"
             fab
             dark
             color="indigo"
-            @click="(dialogCreatTarea = true), getRepuestos()"
+            @click="getRepuestos(),dialogCreatTarea = true"
           >
             <v-icon dark>mdi-plus</v-icon>
           </v-btn>
@@ -28,25 +29,20 @@
       :headers="headers"
       :items="tareas"
       :search="search"
-      @click:row="(selectedTarea = $event), sendItem(selectedTarea)"
+      @click:row="selectedTarea = $event; sendItem(selectedTarea)"
     >
       <template v-slot:item.actions="{ item }">
         <v-icon
           small
           class="mr-2"
           color="red"
-          @click="(selectedTarea = item), (dialogDelete = true)"
-          >mdi-delete</v-icon
-        >
+          @click="selectedTarea = item; dialogDelete = true"
+        >mdi-delete</v-icon>
         <v-icon
           small
           color="blue"
-          @click="
-            selectedTarea = item;
-            dialogUpDateTarea = true;
-          "
-          >mdi-pencil</v-icon
-        >
+          @click="selectedTarea = item; dialogUpDateTarea = true"
+        >mdi-pencil</v-icon>
       </template>
     </v-data-table>
 
@@ -54,7 +50,7 @@
     <v-dialog v-model="dialogUpDateTarea">
       <v-card>
         <v-container>
-          <v-form @submit.prevent="dialogoConfirmDlete = true">
+          <v-form @submit.prevent="dialogoConfirmDelete = true">
             <p><b>MODIFICAR TAREA</b></p>
 
             <v-row>
@@ -95,8 +91,7 @@
                       color="primary"
                       @click="agregarDato"
                       :disabled="nuevoDato === ''"
-                      >Agregar</v-btn
-                    >
+                    >Agregar</v-btn>
                   </v-col>
                 </v-row>
               </v-col>
@@ -116,38 +111,38 @@
                     <template v-slot:item="{ item }">
                       <tr>
                         <td>{{ item }}</td>
-                        <td>
-                          <v-icon small color="red" @click="deleteDato(item)"
-                            >mdi-delete</v-icon
-                          >
-                        </td>
                       </tr>
                     </template>
                   </v-data-table>
                 </v-card>
               </v-col>
             </v-row>
-            <v-row>
+
+            <v-card-actions>
+              <v-btn color="primary" text @click="dialogUpDateTarea = false">
+                Cancelar
+              </v-btn>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text type="submit">
+                Eliminar
+              </v-btn>
               <v-btn
-                type="submit"
-                color="primary"
-                class="mr-4"
-                @click.stop="dialog = false"
-                >Guardar cambios</v-btn
-              >
-            </v-row>
-            <br />
+                color="green"
+                text
+                @click="updateTarea(selectedTarea)"
+              >Actualizar</v-btn>
+            </v-card-actions>
           </v-form>
         </v-container>
       </v-card>
     </v-dialog>
 
-    <!--Modal dialogo crear tarea-->
+    <!-- Modal Crear tarea -->
     <v-dialog v-model="dialogCreatTarea">
       <v-card>
         <v-container>
-          <v-form ref="form" @submit.prevent="addTarea">
-            <p><b>CREAR NUEVA TAREA</b></p>
+          <v-form @submit.prevent="addTarea">
+            <p><b>AGREGAR TAREA</b></p>
 
             <v-row>
               <v-col cols="6">
@@ -155,7 +150,6 @@
                   type="text"
                   label="Agregar nombre de tarea"
                   v-model="nameTarea"
-                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -163,7 +157,6 @@
                   type="text"
                   label="Categoria"
                   v-model="category"
-                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -173,7 +166,6 @@
                   v-model="selectedFrencunce"
                   :items="frecuencias"
                   label="Selecciona una frecuencia"
-                  :rules="[(v) => !!v || 'Este campo es obligatorio']"
                 ></v-combobox>
               </v-col>
               <v-col cols="6">
@@ -190,8 +182,7 @@
                       color="primary"
                       @click="agregarDato"
                       :disabled="nuevoDato === ''"
-                      >Agregar</v-btn
-                    >
+                    >Agregar</v-btn>
                   </v-col>
                 </v-row>
               </v-col>
@@ -200,7 +191,7 @@
               <v-col cols="12">
                 <v-card>
                   <v-card-title>
-                    <h5>Operaciones de la tarea</h5>
+                    <h5>Pasos de tarea</h5>
                   </v-card-title>
 
                   <v-data-table
@@ -211,101 +202,82 @@
                     <template v-slot:item="{ item }">
                       <tr>
                         <td>{{ item }}</td>
-                        <td>
-                          <v-icon small color="red" @click="deleteDato(item)"
-                            >mdi-delete</v-icon
-                          >
-                        </td>
                       </tr>
                     </template>
                   </v-data-table>
                 </v-card>
-
-                <v-data-table
-                  v-model="selectedRepuesto"
-                  :headers="headersTablaRepuestos"
-                  :items="filteredRepuestos"
-                  :single-select="singleSelect"
-                  item-key="idRepuesto"
-                  show-select
-                  class="elevation-1"
-                >
-                  <template v-slot:top>
-                    <v-toolbar flat>
-                      <v-toolbar-title>Repuestos</v-toolbar-title>
-                      <v-spacer></v-spacer>
-                      <v-text-field
-                        v-model="searchRepuestos"
-                        append-icon="mdi-magnify"
-                        label="Buscar"
-                        single-line
-                        hide-details
-                      ></v-text-field>
-                    </v-toolbar>
-                  </template>
-                </v-data-table>
               </v-col>
             </v-row>
-
             <v-row>
-              <v-btn
-                type="submit"
-                color="primary"
-                class="mr-4"
-                @click.stop="validateForm"
-                >Crear Nueva Tarea</v-btn
-              >
+              <v-col cols="12">
+                <v-card>
+                  <h4>Lista de repuestos necesarios</h4>
+                  <v-text-field
+        v-model="searchRepuestos"
+        append-icon="mdi-magnify"
+        label="Buscar"
+        single-line
+        hide-details
+      ></v-text-field>
+      <v-data-table
+    v-model="selectedRepuesto"
+    :headers="headersTablaRepuestos"
+    :items="repuestosDB"
+    :single-select="singleSelect"
+    item-key="id"
+    show-select
+    class="elevation-1"
+    @input="updateSelectedItems"
+  >
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title>Repuestos</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Buscar"
+          single-line
+          hide-details
+        ></v-text-field>
+      </v-toolbar>
+    </template>
+  </v-data-table>
+                </v-card>              
+              </v-col>
             </v-row>
-            <br />
+              <br/>
+              <v-btn  color="primary"
+                class="mr-4"  type="submit">
+                Agregar Tarea
+              </v-btn>
           </v-form>
         </v-container>
       </v-card>
     </v-dialog>
 
-    <!-- Modal Confirmar Eliminar -->
-    <v-dialog v-model="dialogDelete" max-width="500px">
+    <!-- Modal Confirmar eliminación de tarea -->
+    <v-dialog v-model="dialogDelete">
       <v-card>
-        <v-card-title class="headline">Confirmar Eliminación</v-card-title>
-        <v-card-text
-          >¿Estás seguro de que deseas eliminar este elemento?</v-card-text
-        >
+        <v-card-title class="headline">Confirmar eliminación</v-card-title>
+        <v-card-text>¿Estás seguro de que deseas eliminar esta tarea?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="red darken-1" text @click="dialogDelete = false"
-            >Cancelar</v-btn
-          >
-          <v-btn
-            color="green darken-1"
-            text
-            @click="deleteTarea(selectedTarea), (dialogDelete = false)"
-            >Aceptar</v-btn
-          >
+          <v-btn color="primary" text @click="dialogDelete = false">Cancelar</v-btn>
+          <v-btn color="red" text @click="deleteTarea(selectedTarea)">Eliminar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Modal Confirmar upDate -->
-    <v-dialog v-model="dialogoConfirmDlete" max-width="500px">
+    <!-- Modal Confirmar eliminación de tarea en el formulario de actualización -->
+    <v-dialog v-model="dialogoConfirmDelete">
       <v-card>
-        <v-card-title class="headline">Confirmar Modificación</v-card-title>
-        <v-card-text
-          >¿Estás seguro de que deseas modificar este elemento?</v-card-text
-        >
+        <v-card-title class="headline">Confirmar eliminación</v-card-title>
+        <v-card-text>¿Estás seguro de que deseas eliminar esta tarea?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="red darken-1" text @click="dialogoConfirmDlete = false"
-            >Cancelar</v-btn
-          >
-          <v-btn
-            color="green darken-1"
-            text
-            @click="
-              updateTare(selectedTarea),
-                (dialogoConfirmDlete = false),
-                (dialogUpDateTarea = false)
-            "
-            >Aceptar</v-btn
-          >
+          <v-btn color="primary" text @click="dialogoConfirmDelete = false">Cancelar</v-btn>
+          <v-btn color="red" text @click="deleteTarea(selectedTarea)">Eliminar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -322,13 +294,15 @@ export default {
     return {
       singleSelect: false,
       repuestos: [],
+      repuestosDB:[],
       searchRepuestos: "",
       selectedRepuesto: [],
       search: "",
       dialogCreatTarea: false,
       machines: [],
       dialogUpDateTarea: false,
-      dialogoConfirmDlete: false,
+      dialogoConfirmDelete: false,
+      
       typeErrors: [],
       dialogDelete: false,
       datos: [],
@@ -337,13 +311,16 @@ export default {
       selectedTarea: [],
       tareas: [],
       operaciones: null,
-      nameTarea: null,
-      category: null,
-      priceRepuesto: null,
-      provaiderRepuesto: null,
+      nameTarea: "",
+      category: "",
+      priceRepuesto: "",
+      provaiderRepuesto: "",
       selectedFrencunce: "",
       frecuencias: ["Diaria", "Semanal", "Quincenal", "Mensual"],
 
+      selected: [],
+      repuestos: [],
+      search: "",
       headersTablaRepuestos: [
         {
           text: "Identificador",
@@ -351,25 +328,9 @@ export default {
           filterable: false,
           value: "idRepuesto",
         },
-        { text: "Nombre", value: "nameRepuesto" },
-        { text: "Precio €", align: "center", value: "priceRepuesto" },
-        { text: "Proveedor", align: "center", value: "provaiderRepuesto" },
-      ],
-
-      headersRepuesto: [
-        {
-          text: "Identificador",
-          align: "start",
-          filterable: false,
-          value: "idRepuesto",
-        },
-        { text: "Nombre", value: "nameRepuesto" },
-        { text: "Precio €", align: "center", value: "priceRepuesto" },
-        {
-          text: "Proveedor",
-          align: "center",
-          value: "provaiderRepuesto",
-        },
+        { text: "Nombre", value: "name" },
+        { text: "Precio €", align: "center", value: "price" },
+        { text: "Proveedor", align: "center", value: "supplier" },
       ],
       headers: [
         {
@@ -386,7 +347,6 @@ export default {
   },
   created() {
     this.getTareas();
-    this.getRepuestos();
   },
   computed: {
     filteredRepuestos() {
@@ -400,8 +360,8 @@ export default {
     },
   },
   methods: {
-    validateForm() {
-      this.$refs.form.validate();
+    mostrarMensaje(){
+      console.log("El boton funciona bien ");
     },
     mostrarDatosRepuestos() {
       const nombresSeleccionados = [];
@@ -412,12 +372,9 @@ export default {
     },
 
     updateSelectedItems() {
-      this.selectedRepuestos = this.repuestosDB.filter(
-        (item) => item.isSelected
-      );
+      this.selectedRepuestos = this.repuestosDB.filter(item => item.isSelected);
     },
     sendItem(item) {
-      console.log(item.category);
       eventBus.$emit("item-selected", item);
     },
     deleteDato(item) {
@@ -439,7 +396,7 @@ export default {
           selectedFrencunce: selectedTarea.selectedFrencunce,
           provaiderRepuesto: selectedTarea.provaiderRepuesto,
         });
-        this.getTareas();
+        this.getRepuestos();
       } catch (error) {
         console.log(error);
       }
@@ -455,6 +412,7 @@ export default {
       }
     },
     async getRepuestos() {
+      console.log("Voy a traerme los repuestos")
       try {
         const snapshot = await getDocs(collection(db, "repuestos"));
         const repuestos = [];
@@ -465,7 +423,8 @@ export default {
           repuestos.push(repuestosData);
         });
 
-        this.repuestos = repuestos;
+        this.repuestosDB = repuestos;
+        console.log("Voy a traerme los repuestos" + this.repuestosDB.length)
       } catch (error) {
         console.log(error);
       }
@@ -488,51 +447,21 @@ export default {
     },
     async addTarea() {
       try {
-        if (
-          !camposVacios(
-            this.nameTarea,
-            this.category,
-            this.selectedFrencunce,
-            this.datos
-          )
-        ) {
+        
           await addDoc(collection(db, "tareas"), {
             nameTarea: this.nameTarea,
             category: this.category,
             selectedFrencunce: this.selectedFrencunce,
             datos: this.datos,
-            repuestos: this.selectedRepuesto,
+            repuestos:this.selectedRepuesto
           });
-        } else {
-          console.log("los campos estan vacios");
-        }
+          this.getTareas();
       } catch (error) {
         console.log(error);
       }
-      this.getTareas();
-      this.inizialite();
     },
-    inizialite() {
-      this.nameTarea = "";
-      this.category = "";
-      this.selectedFrencunce = "";
-      this.datos = "";
-      this.selectedRepuesto = [];
-    },
-    camposVacios(nameTarea, category, selectedFrencunce, datos) {
-  if (
-    nameTarea.value === "" ||
-    category.value === "" ||
-    selectedFrencunce.value === "" ||
-    datos === ""
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-}
   },
 };
 
- 
+
 </script>

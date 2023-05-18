@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title>
       <v-text-field
-        v-model="search"
+        v-model="searchRepuestos"
         append-icon="mdi-magnify"
         label="Buscar"
         single-line
@@ -21,7 +21,7 @@
     <v-data-table
       :headers="headers"
       :items="repuestos"
-      :search="search"
+      :search="searchRepuestos"
       @click="selectedRepuesto = item"
     >
       <template v-slot:item.actions="{ item }">
@@ -50,7 +50,7 @@
                 <v-text-field
                   type="text"
                   label="ID de Repuesto"
-                  v-model="selectedRepuesto.id"
+                  v-model="selectedRepuesto.idRepuesto"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -101,7 +101,7 @@
                 <v-text-field
                   type="text"
                   label="ID de Repuesto"
-                  v-model="newRepuesto.id"
+                  v-model="newRepuesto.idRepuesto"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -169,19 +169,19 @@ export default {
    */
   data() {
     return {
-      search: "",
+      searchRepuestos: "",
       dialogAddRepuesto: false,
       dialogUpdateRepuesto: false,
       selectedRepuesto: {},
       repuestos: [],
       newRepuesto: {
-        id: "",
+        idRepuesto: "",
         name: "",
         price: null,
         supplier: "",
       },
       headers: [
-        { text: "ID de Repuesto", value: "id" },
+        { text: "ID de Repuesto", value: "idRepuesto" },
         { text: "Nombre de Repuesto", value: "name" },
         { text: "Precio €", value: "price" },
         { text: "Proveedor", value: "supplier" },
@@ -191,6 +191,17 @@ export default {
   },
   created() {
     this.getRepuestos();
+  },
+  computed: {
+    filteredRepuestos() {
+      return this.repuestos.filter((repuesto) => {
+        const searchTerm = this.search.toLowerCase();
+        return (
+          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+          repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+        );
+      });
+    },
   },
   methods: {
     /**
@@ -202,7 +213,7 @@ export default {
       try {
         const docRef = doc(db, "repuestos", selectedRepuesto.id);
         await updateDoc(docRef, {
-          id: selectedRepuesto.id,
+          idRepuesto: selectedRepuesto.idRepuesto,
           name: selectedRepuesto.name,
           price: selectedRepuesto.price,
           supplier: selectedRepuesto.supplier,
@@ -253,7 +264,7 @@ export default {
     async addRepuesto() {
       try {
         await addDoc(collection(db, "repuestos"), {
-          id: this.newRepuesto.id,
+          idRepuesto: this.newRepuesto.idRepuesto,
           name: this.newRepuesto.name,
           price: this.newRepuesto.price,
           supplier: this.newRepuesto.supplier,
@@ -268,7 +279,7 @@ export default {
      * Clears the new repuesto form.
      */
     clearForm() {
-      this.newRepuesto.id = "";
+      this.newRepuesto.idRepuesto = "";
       this.newRepuesto.name = "";
       this.newRepuesto.price = null;
       this.newRepuesto.supplier = "";
@@ -280,7 +291,7 @@ export default {
      */
     isAnyFieldEmpty(repuesto) {
       return (
-        !repuesto.id ||
+        !repuesto.idRepuesto ||
         !repuesto.name ||
         repuesto.price === null ||
         !repuesto.supplier

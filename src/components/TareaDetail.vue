@@ -17,7 +17,7 @@
         <h3>Repuestos</h3>
         <ul>
           <li v-for="(repuesto, index) in itemRecibido.repuestos" :key="index">
-            {{ repuesto.idRepuesto }} - {{ repuesto.nameRepuesto }}
+            {{ repuesto.idRepuesto }} - {{ repuesto.name }}
           </li>
         </ul>
       </v-card-text>
@@ -35,7 +35,6 @@
       };
     },
     created() {
-     
       eventBus.$on('item-selected', this.procesarItem);
     },
     methods: {
