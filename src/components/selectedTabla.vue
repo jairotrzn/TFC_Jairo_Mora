@@ -39,11 +39,11 @@ export default {
           text: "Identificador",
           align: "start",
           filterable: false,
-          value: "idRepuesto",
+          value: "id",
         },
-        { text: "Nombre", value: "nameRepuesto" },
-        { text: "Precio €", align: "center", value: "priceRepuesto" },
-        { text: "Proveedor", align: "center", value: "provaiderRepuesto" },
+        { text: "Nombre", value: "name" },
+        { text: "Precio €", align: "center", value: "price" },
+        { text: "Proveedor", align: "center", value: "supplier" },
       ],
     };
   },
@@ -62,13 +62,7 @@ export default {
     },
   },
   methods: {
-    mostrarDatos() {
-      const nombresSeleccionados = [];
-      this.selected.forEach((item) => {
-        nombresSeleccionados.push(item.nameRepuesto);
-      });
-      console.log("Nombres seleccionados:", nombresSeleccionados);
-    },
+  
     async getRepuestos() {
       try {
         const snapshot = await getDocs(collection(db, "repuestos"));

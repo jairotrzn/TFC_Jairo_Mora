@@ -5,7 +5,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore,collection, getDocs,addDoc,doc,deleteDoc} from 'firebase/firestore';
+import { getFirestore,collection, getDocs,addDoc,doc,deleteDoc,query,where} from 'firebase/firestore';
   
 import VueTextareaAutosize from "vue-textarea-autosize";
 Vue.use(VueTextareaAutosize);
@@ -26,7 +26,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
  export const db = getFirestore(app);
- export {collection,getDocs,addDoc,doc,deleteDoc}
+ export {collection,getDocs,addDoc,doc,deleteDoc,query,where}
 
 Vue.config.productionTip = false
 

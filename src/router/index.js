@@ -24,7 +24,13 @@ const routes = [
     path: '/tareas',
     name: 'tareas',
     component: () => import('../views/Tareas')
+  },
+  {
+    path: '/preventivos',
+    name: 'preventivos',
+    component: () => import('../views/Preventivos')
   }
+
 ]
 
 const router = new VueRouter({

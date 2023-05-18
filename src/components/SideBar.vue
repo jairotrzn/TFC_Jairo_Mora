@@ -62,7 +62,7 @@ export default {
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
       { icon: "build", to: "repuestos", text: "Repuestos" },
       { icon: "mdi-calendar-check", to:"tareas", text: "Tareas" },
-      { icon: "mdi-tools", text: "Preventivos" },
+      { icon: "mdi-tools", to:"preventivos", text: "Preventivos" },
        { icon: " mdi-alert", text: "Averias" },
     ],
   }),
