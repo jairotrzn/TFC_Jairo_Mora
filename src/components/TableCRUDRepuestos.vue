@@ -4,14 +4,14 @@
       <v-text-field
         v-model="search"
         append-icon="mdi-magnify"
-        label="Search"
+        label="Buscar"
         single-line
         hide-details
       ></v-text-field>
       <v-spacer></v-spacer>
       <template>
         <div class="text-center">
-          <v-btn class="mx-2" fab dark color="indigo" @click="dialogoCreateRepuesto = true">
+          <v-btn class="mx-2" fab dark color="indigo" @click="dialogAddRepuesto = true">
             <v-icon dark>mdi-plus</v-icon>
           </v-btn>
         </div>
@@ -25,9 +25,7 @@
       @click="selectedRepuesto = item"
     >
       <template v-slot:item.actions="{ item }">
-        <v-icon small class="mr-2" color="red" @click="deleteRepuesto(item)"
-          >mdi-delete</v-icon
-        >
+        <v-icon small class="mr-2" color="red" @click="deleteRepuesto(item)">mdi-delete</v-icon>
         <v-icon
           small
           color="blue"
@@ -40,8 +38,8 @@
       </template>
     </v-data-table>
 
-   <!-- Modal Modificar Repuesto -->
-       <v-dialog v-model="dialogUpdateRepuesto">
+    <!-- Modal Modificar Repuesto -->
+    <v-dialog v-model="dialogUpdateRepuesto">
       <v-card>
         <v-container>
           <v-form @submit.prevent="updateRepuesto(selectedRepuesto)">
@@ -51,15 +49,15 @@
               <v-col cols="6">
                 <v-text-field
                   type="text"
-                  label="Agregar Id de repuesto"
-                  v-model="selectedRepuesto.idRepuesto"
+                  label="ID de Repuesto"
+                  v-model="selectedRepuesto.id"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
                   type="text"
                   label="Nombre de Repuesto"
-                  v-model="selectedRepuesto.nameRepuesto"
+                  v-model="selectedRepuesto.name"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -68,14 +66,14 @@
                 <v-text-field
                   type="number"
                   label="Precio €"
-                  v-model="selectedRepuesto.priceRepuesto"
+                  v-model="selectedRepuesto.price"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
                   type="text"
                   label="Proveedor"
-                  v-model="selectedRepuesto.provaiderRepuesto"
+                  v-model="selectedRepuesto.supplier"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -85,15 +83,14 @@
               color="primary"
               class="mr-4"
               @click.stop="dialogUpdateRepuesto = false"
-              >Guardar Cambios</v-btn
-            >
+            >Guardar Cambios</v-btn>
           </v-form>
         </v-container>
       </v-card>
     </v-dialog>
 
-        <!-- Modal Agregar Repuesto -->
-    <v-dialog v-model="dialogoCreateRepuesto">
+    <!-- Modal Agregar Repuesto -->
+    <v-dialog v-model="dialogAddRepuesto">
       <v-card>
         <v-container>
           <v-form @submit.prevent="addRepuesto">
@@ -103,15 +100,15 @@
               <v-col cols="6">
                 <v-text-field
                   type="text"
-                  label="Agregar Id de repuesto"
-                  v-model="idRepuesto"
+                  label="ID de Repuesto"
+                  v-model="newRepuesto.id"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
                   type="text"
                   label="Nombre de Repuesto"
-                  v-model="nameRepuesto"
+                  v-model="newRepuesto.name"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -120,14 +117,14 @@
                 <v-text-field
                   type="number"
                   label="Precio €"
-                  v-model="priceRepuesto"
+                  v-model="newRepuesto.price"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
                   type="text"
                   label="Proveedor"
-                  v-model="provaiderRepuesto"
+                  v-model="newRepuesto.supplier"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -136,81 +133,90 @@
               type="submit"
               color="primary"
               class="mr-4"
-              @click.stop="dialog = false"
-              >Agregar</v-btn
-            >
+              :disabled="isAnyFieldEmpty(newRepuesto)"
+              @click.stop="dialogAddRepuesto = false"
+            >Agregar</v-btn>
           </v-form>
         </v-container>
       </v-card>
     </v-dialog>
-
   </v-card>
 </template>
 
-
-
-
+/**
+ * Component representing a form for managing repuestos.
+ * @module RepuestosForm
+ */
 <script>
+
 import { updateDoc } from "firebase/firestore";
 import { db, collection, getDocs, addDoc, deleteDoc, doc } from "../main";
 
 export default {
+  /**
+   * Data properties of the component.
+   * @property {string} search - The search query for filtering repuestos.
+   * @property {boolean} dialogAddRepuesto - Flag indicating whether the "Add Repuesto" dialog is open or not.
+   * @property {boolean} dialogUpdateRepuesto - Flag indicating whether the "Update Repuesto" dialog is open or not.
+   * @property {Object} selectedRepuesto - The currently selected repuesto.
+   * @property {Array} repuestos - The list of repuestos.
+   * @property {Object} newRepuesto - The new repuesto being added.
+   * @property {string} newRepuesto.id - The ID of the new repuesto.
+   * @property {string} newRepuesto.name - The name of the new repuesto.
+   * @property {number|null} newRepuesto.price - The price of the new repuesto.
+   * @property {string} newRepuesto.supplier - The supplier of the new repuesto.
+   * @property {Array} headers - The table headers for displaying repuestos.
+   */
   data() {
     return {
       search: "",
-      dialogoCreateRepuesto: false,
-      machines: [],
+      dialogAddRepuesto: false,
       dialogUpdateRepuesto: false,
-      typeErrors: [],
-
-      item: null,
-
-      selectedRepuesto: [],
+      selectedRepuesto: {},
       repuestos: [],
-
-      idRepuesto: null,
-      nameRepuesto: null,
-      priceRepuesto: null,
-      provaiderRepuesto: null,
-
+      newRepuesto: {
+        id: "",
+        name: "",
+        price: null,
+        supplier: "",
+      },
       headers: [
-        {
-          text: "Identificador",
-          align: "start",
-          filterable: false,
-          value: "idRepuesto",
-        },
-        { text: "Nombre", value: "nameRepuesto" },
-        { text: "Precio €", align: "center", value: "priceRepuesto" },
-        {
-          text: "Proveedor",
-          align: "center",
-          value: "provaiderRepuesto",
-        },
+        { text: "ID de Repuesto", value: "id" },
+        { text: "Nombre de Repuesto", value: "name" },
+        { text: "Precio €", value: "price" },
+        { text: "Proveedor", value: "supplier" },
         { text: "Acciones", value: "actions" },
       ],
     };
-  }, 
-
+  },
   created() {
     this.getRepuestos();
   },
   methods: {
+    /**
+     * Updates the selected repuesto.
+     * @param {Object} selectedRepuesto - The repuesto to be updated.
+     * @returns {Promise<void>}
+     */
     async updateRepuesto(selectedRepuesto) {
       try {
         const docRef = doc(db, "repuestos", selectedRepuesto.id);
         await updateDoc(docRef, {
-            idRepuesto: selectedRepuesto.idRepuesto,
-            nameRepuesto: selectedRepuesto.nameRepuesto,
-            priceRepuesto:selectedRepuesto.priceRepuesto,
-            provaiderRepuesto:selectedRepuesto.provaiderRepuesto,
+          id: selectedRepuesto.id,
+          name: selectedRepuesto.name,
+          price: selectedRepuesto.price,
+          supplier: selectedRepuesto.supplier,
         });
-        this.getMachines();
+        this.getRepuestos();
       } catch (error) {
         console.log(error);
       }
     },
-
+    /**
+     * Deletes a repuesto.
+     * @param {Object} item - The repuesto to be deleted.
+     * @returns {Promise<void>}
+     */
     async deleteRepuesto(item) {
       try {
         const docRef = doc(db, "repuestos", item.id);
@@ -220,15 +226,19 @@ export default {
         console.log(error);
       }
     },
+    /**
+     * Retrieves the list of repuestos from the database.
+     * @returns {Promise<void>}
+     */
     async getRepuestos() {
       try {
         const snapshot = await getDocs(collection(db, "repuestos"));
         const repuestos = [];
 
         snapshot.forEach((doc) => {
-          let repuestosData = doc.data();
-          repuestosData.id = doc.id;
-          repuestos.push(repuestosData);
+          let repuesto = doc.data();
+          repuesto.id = doc.id;
+          repuestos.push(repuesto);
         });
 
         this.repuestos = repuestos;
@@ -236,58 +246,52 @@ export default {
         console.log(error);
       }
     },
-
+    /**
+     * Adds a new repuesto to the database.
+     * @returns {Promise<void>}
+     */
     async addRepuesto() {
       try {
-        if (
-          !camposVacios(
-            this.idRepuesto,
-            this.nameRepuesto,
-            this.priceRepuesto,
-            this.provaiderRepuesto,
-          )
-        ) {
-          await addDoc(collection(db, "repuestos"), {
-            idRepuesto: this.idRepuesto,
-            nameRepuesto: this.nameRepuesto,
-            priceRepuesto:this.priceRepuesto,
-            provaiderRepuesto:this.provaiderRepuesto,
-
-          });
-          this.getRepuestos();
-          inizialite();
-        } else {
-          console.log("los campos estan vacios");
-        }
+        await addDoc(collection(db, "repuestos"), {
+          id: this.newRepuesto.id,
+          name: this.newRepuesto.name,
+          price: this.newRepuesto.price,
+          supplier: this.newRepuesto.supplier,
+        });
+        this.getRepuestos();
+        this.clearForm();
       } catch (error) {
         console.log(error);
       }
     },
+    /**
+     * Clears the new repuesto form.
+     */
+    clearForm() {
+      this.newRepuesto.id = "";
+      this.newRepuesto.name = "";
+      this.newRepuesto.price = null;
+      this.newRepuesto.supplier = "";
+    },
+    /**
+     * Checks if any field in the repuesto object is empty.
+     * @param {Object} repuesto - The repuesto object to check.
+     * @returns {boolean} - Returns true if any field is empty, false otherwise.
+     */
+    isAnyFieldEmpty(repuesto) {
+      return (
+        !repuesto.id ||
+        !repuesto.name ||
+        repuesto.price === null ||
+        !repuesto.supplier
+      );
+    },
   },
 };
-
-function inizialite() {
-      idRepuesto: null;
-      nameRepuesto: null;
-      priceRepuesto: null;
-      provaiderRepuesto: null;
-}
-function camposVacios(
-      idRepuesto,
-      nameRepuesto,
-      priceRepuesto,
-      provaiderRepuesto
-) {
-  if (
- idRepuesto.value === "" ||
-      nameRepuesto.value === "" ||
-      priceRepuesto.value === "" ||
-      provaiderRepuesto.value === "" 
-
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-}
 </script>
+
+<style scoped>
+.v-data-table__wrapper {
+  max-height: 400px;
+}
+</style>

@@ -494,6 +494,7 @@
               color="primary"
               class="mr-4"
               @click.stop="dialog = false"
+              :disabled="!areAllFieldsFilled"
               >Agregar</v-btn
             >
           </v-form>
@@ -576,7 +577,7 @@ export default {
   data() {
     return {
       dialogDelete: false,
-      dialogConfirmUpdate: false,
+      dialogoConfirmUpdate: false,
       search: "",
       dialog: false,
       machines: [],
@@ -635,6 +636,32 @@ export default {
    */
   created() {
     this.getMachines();
+  },
+  computed: {
+    areAllFieldsFilled() {
+      return (
+        this.type &&
+        this.location &&
+        this.machineCode &&
+        this.department &&
+        this.mainMotorPower >= 0 &&
+        this.feedMotorPower >= 0 &&
+        this.pumpMotorPower >= 0 &&
+        this.current >= 0 &&
+        this.maximumSpeed >= 0 &&
+        this.minimumSpeed >= 0 &&
+        this.numberOfSpeeds >= 0 &&
+        this.maximumLongitudinalFeed >= 0 &&
+        this.numberOfLongitudinalFeeds >= 0 &&
+        this.maximumTransversalFeed >= 0 &&
+        this.numberOfTransversalFeeds >= 0 &&
+        this.maximumVerticalFeed >= 0 &&
+        this.numberOfVerticalFeeds >= 0 &&
+        this.minimumLongitudinalFeed >= 0 &&
+        this.minimumTransversalFeed >= 0 &&
+        this.minimumVerticalFeed >= 0
+      );
+    },
   },
   methods: {
     /**
@@ -763,31 +790,7 @@ export default {
     async addMachine() {
       console.log("voy a agregar maquina");
       try {
-        if (
-          !camposVacios(
-            this.image,
-            this.type,
-            this.location,
-            this.machineCode,
-            this.department,
-            this.mainMotorPower,
-            this.feedMotorPower,
-            this.pumpMotorPower,
-            this.current,
-            this.maximumSpeed,
-            this.minimumSpeed,
-            this.numberOfSpeeds,
-            this.maximumLongitudinalFeed,
-            this.numberOfLongitudinalFeeds,
-            this.maximumTransversalFeed,
-            this.numberOfTransversalFeeds,
-            this.maximumVerticalFeed,
-            this.numberOfVerticalFeeds,
-            this.minimumLongitudinalFeed,
-            this.minimumTransversalFeed,
-            this.minimumVerticalFeed
-          )
-        ) {
+
           const querySnapshot = await getDocs(
             query(
               collection(db, "machines"),
@@ -823,88 +826,11 @@ export default {
           } else {
             console.log("Ya existe una máquina con el mismo machineCode");
           }
-        } else {
-          console.log("los campos estan vacios");
-        }
       } catch (error) {
         console.log(error);
       }
     },
   },
 };
-/**
- * Check if any of the fields is empty.
- * @param {string} type - The type field value.
- * @param {string} location - The location field value.
- * @param {string} machineCode - The machineCode field value.
- * @param {string} department - The department field value.
- * @param {string} mainMotorPower - The mainMotorPower field value.
- * @param {string} feedMotorPower - The feedMotorPower field value.
- * @param {string} pumpMotorPower - The pumpMotorPower field value.
- * @param {string} current - The current field value.
- * @param {string} maximumSpeed - The maximumSpeed field value.
- * @param {string} minimumSpeed - The minimumSpeed field value.
- * @param {string} numberOfSpeeds - The numberOfSpeeds field value.
- * @param {string} maximumLongitudinalFeed - The maximumLongitudinalFeed field value.
- * @param {string} numberOfLongitudinalFeeds - The numberOfLongitudinalFeeds field value.
- * @param {string} maximumTransversalFeed - The maximumTransversalFeed field value.
- * @param {string} numberOfTransversalFeeds - The numberOfTransversalFeeds field value.
- * @param {string} maximumVerticalFeed - The maximumVerticalFeed field value.
- * @param {string} numberOfVerticalFeeds - The numberOfVerticalFeeds field value.
- * @param {string} minimumLongitudinalFeed - The minimumLongitudinalFeed field value.
- * @param {string} minimumTransversalFeed - The minimumTransversalFeed field value.
- * @param {string} minimumVerticalFeed - The minimumVerticalFeed field value.
- * @returns {boolean} True if any field is empty, false otherwise.
- */
-function camposVacios(
-  //image,
-  type,
-  location,
-  machineCode,
-  department,
-  mainMotorPower,
-  feedMotorPower,
-  pumpMotorPower,
-  current,
-  maximumSpeed,
-  minimumSpeed,
-  numberOfSpeeds,
-  maximumLongitudinalFeed,
-  numberOfLongitudinalFeeds,
-  maximumTransversalFeed,
-  numberOfTransversalFeeds,
-  maximumVerticalFeed,
-  numberOfVerticalFeeds,
-  minimumLongitudinalFeed,
-  minimumTransversalFeed,
-  minimumVerticalFeed
-) {
-  if (
-    image === "" ||
-    type.value === "" ||
-    location.value === "" ||
-    machineCode.value === "" ||
-    department.value === "" ||
-    mainMotorPower.value === "" ||
-    feedMotorPower.value === "" ||
-    pumpMotorPower.value === "" ||
-    current.value === "" ||
-    maximumSpeed.value === "" ||
-    minimumSpeed.value === "" ||
-    numberOfSpeeds.value === "" ||
-    maximumLongitudinalFeed.value === "" ||
-    numberOfLongitudinalFeeds.value === "" ||
-    maximumTransversalFeed.value === "" ||
-    numberOfTransversalFeeds.value === "" ||
-    maximumVerticalFeed.value === "" ||
-    numberOfVerticalFeeds.value === "" ||
-    minimumLongitudinalFeed.value === "" ||
-    minimumTransversalFeed.value === "" ||
-    minimumVerticalFeed.value === ""
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-}
+
 </script>
