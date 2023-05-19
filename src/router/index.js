@@ -29,6 +29,10 @@ const routes = [
     path: '/preventivos',
     name: 'preventivos',
     component: () => import('../views/Preventivos')
+  },  {
+    path: '/averias',
+    name: 'prevaveriasentivos',
+    component: () => import('../views/Averias')
   }
 
 ]

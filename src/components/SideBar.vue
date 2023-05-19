@@ -63,7 +63,7 @@ export default {
       { icon: "build", to: "repuestos", text: "Repuestos" },
       { icon: "mdi-calendar-check", to:"tareas", text: "Tareas" },
       { icon: "mdi-tools", to:"preventivos", text: "Preventivos" },
-       { icon: " mdi-alert", text: "Averias" },
+       { icon: " mdi-alert",to:"averias" ,text: "Averias" },
     ],
   }),
 

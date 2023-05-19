@@ -453,7 +453,8 @@ export default {
             category: this.category,
             selectedFrencunce: this.selectedFrencunce,
             datos: this.datos,
-            repuestos:this.selectedRepuesto
+            repuestos:this.selectedRepuesto,
+            state:"Pendiente"
           });
           this.getTareas();
       } catch (error) {

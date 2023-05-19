@@ -1,8 +1,7 @@
 <template>
   <v-app
     id="inspire"
-    :style="{ background: $vuetify.theme.themes.dark.background }"
-  >
+    :style="{ background: $vuetify.theme.themes.dark.background  }">
     <SideBar />
     <Navbar />
     <v-container>

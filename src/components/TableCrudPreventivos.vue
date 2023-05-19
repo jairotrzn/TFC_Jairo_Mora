@@ -50,10 +50,8 @@
           >
         </template>
       </v-data-table>
-      <!--MOdal dialogo Detalles preventivo-->
-      <v-dialog v-model="dialogPreventivDetail">
-        <PreventivsDetail />
-      </v-dialog>
+          <PreventivsDetail />
+         
       <!--Modal dialogo crear Preventivo -->
       <v-dialog v-model="dialogCreatPreventivo">
         <v-card>
@@ -141,7 +139,7 @@ import { updateDoc } from "firebase/firestore";
 import { db, collection, getDocs, addDoc, deleteDoc, doc } from "../main";
 import eventBus from "@/config/eventBus";
 import { v4 as uuidv4 } from "uuid";
-import PreventivsDetail from "@/components/PreventivsDetail.vue";
+import PreventivsDetail from "@/components/preventivsComponents/PreventivsDetail.vue";
 export default {
   components: {
     PreventivsDetail,
@@ -180,8 +178,6 @@ export default {
           value: "accessCode",
         },
         { text: "Cod.Máquina", value: "machineCode.machineCode" },
-        { text: "Alumno", align: "center", value: "student" },
-        { text: "Password", align: "center", value: "password" },
         { text: "Fecha Inicio", align: "center", value: "startDate" },
         { text: "Estado", align: "center", value: "state" },
         { text: "Acciones", align: "center", value: "actions" },
