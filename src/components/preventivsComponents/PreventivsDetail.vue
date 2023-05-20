@@ -1,5 +1,5 @@
 <template>
-  <v-card  class="custom-card">
+  <v-card class="custom-card">
     <v-card-title class="headline">Detalle del Preventivo</v-card-title>
     <v-card-text>
       <v-container>
@@ -13,15 +13,17 @@
                     <v-text-field
                       label="Nombre del Responsable"
                       v-model="itemRecibido.namePersonInCharge"
-                      readonly
-                    ></v-text-field>
+                      :readonly="isReadOnly"
+                    >
+                    </v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Código de acceso"
                       v-model="itemRecibido.accessCode"
-                      readonly
-                    ></v-text-field>
+                      :readonly="isReadOnly"
+                    >
+                    </v-text-field>
                   </v-col>
                 </v-row>
 
@@ -30,33 +32,58 @@
                     <v-text-field
                       label="Alumno"
                       v-model="itemRecibido.student"
-                      readonly
-                    ></v-text-field>
+                      :readonly="isReadOnly"
+                    >
+                      <template v-slot:append>
+                        <v-btn icon small @click="toggleEdit('student')">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                      </template>
+                    </v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Password"
                       v-model="itemRecibido.password"
-                      readonly
-                    ></v-text-field>
+                      :readonly="isReadOnly"
+                    >
+                      <template v-slot:append>
+                        <v-btn icon small @click="toggleEdit('password')">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                      </template>
+                    </v-text-field>
                   </v-col>
                 </v-row>
 
                 <v-row>
                   <v-col cols="6">
                     <v-text-field
+                    type="date"
                       label="Fecha de inicio"
                       v-model="itemRecibido.startDate"
-                      readonly
-                    ></v-text-field>
+                      :readonly="isReadOnly"
+                    >
+                      <template v-slot:append>
+                        <v-btn icon small @click="toggleEdit('startDate')">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                      </template>
+                    </v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Estado"
                       v-model="itemRecibido.state"
-                      readonly
+                      :readonly="isReadOnly"
                       :class="estadoClase"
-                    ></v-text-field>
+                    >
+                      <template v-slot:append>
+                        <v-btn icon small @click="toggleEdit('state')">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                      </template>
+                    </v-text-field>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -72,8 +99,9 @@
                       <v-text-field
                         label="Código de Máquina"
                         v-model="itemRecibido.machineCode.machineCode"
-                        readonly
-                      ></v-text-field>
+                        :readonly="isReadOnly"
+                      >
+                      </v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -81,8 +109,9 @@
                       <v-text-field
                         label="Nombre de la Máquina"
                         v-model="itemRecibido.machineCode.type"
-                        readonly
-                      ></v-text-field>
+                        :readonly="isReadOnly"
+                      >
+                      </v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -90,15 +119,18 @@
                       <v-text-field
                         label="Ubicación"
                         v-model="itemRecibido.machineCode.location"
-                        readonly
-                      ></v-text-field>
+                        :readonly="isReadOnly"
+                      >
+          
+                      </v-text-field>
                     </v-col>
                     <v-col cols="6">
                       <v-text-field
                         label="Departamento"
                         v-model="itemRecibido.machineCode.department"
-                        readonly
-                      ></v-text-field>
+                        :readonly="isReadOnly"
+                      >
+                      </v-text-field>
                     </v-col>
                   </v-row>
                 </v-card-text>
@@ -141,21 +173,31 @@
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
+              <v-btn icon small color="red" @click="eliminarTarea(index)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
             </v-list-group>
           </v-list>
         </v-card>
+        <v-btn v-if="!isReadOnly" @click="confirmUpdate" :disabled="!hasChanges">Actualizar</v-btn>
       </v-container>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
+import { updateDoc } from "firebase/firestore";
+import { db,doc } from "@/main";
+
 import eventBus from "@/config/eventBus";
 
 export default {
   data() {
     return {
       itemRecibido: null,
+      isReadOnly: true,
+      originalItem: null,
+      hasChanges: false
     };
   },
   computed: {
@@ -175,10 +217,68 @@ export default {
     eventBus.$on("item-selected", this.procesarItem);
   },
   methods: {
+    confirmUpdate() {
+      console.log("voy a actualizar " + this.itemRecibido.student)
+      if (confirm("¿Estás seguro de que deseas actualizar?")) {
+        this.upDate(this.itemRecibido);
+      }
+    },
     procesarItem(item) {
       this.itemRecibido = item;
+      this.originalItem = JSON.parse(JSON.stringify(item));
+      this.isReadOnly = true;
+      this.hasChanges = false;
     },
+    toggleEdit(prop) {
+      if (this.itemRecibido.state !== "Acabado") {
+        this.isReadOnly = !this.isReadOnly;
+        if (!this.isReadOnly) {
+          this.originalItem = JSON.parse(JSON.stringify(this.itemRecibido));
+        } else {
+          this.itemRecibido = JSON.parse(JSON.stringify(this.originalItem));
+        }
+        this.hasChanges = false;
+      }
+    },
+
+    async upDate(itemRecibido) {
+      console.log("voy a actualizar")
+  try {
+    const docRef = doc(db, "preventivos", itemRecibido.id);
+    await updateDoc(docRef, {
+
+      namePersonInCharge: this.itemRecibido.namePersonInCharge,
+      accessCode: this.itemRecibido.accessCode,
+      student: this.itemRecibido.student,
+      password: this.itemRecibido.password,
+      startDate: this.itemRecibido.startDate,
+      state: this.itemRecibido.state,
+      machineCode: this.itemRecibido.machineCode,
+      tareas: this.itemRecibido.tareas,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+  eventBus.$emit("changes-saved");
+  this.isReadOnly = true;
+  this.hasChanges = false;
+},
+    eliminarTarea(index) {
+      this.itemRecibido.tareas.splice(index, 1);
+    }
   },
+  watch: {
+    itemRecibido: {
+      deep: true,
+      handler() {
+        if (JSON.stringify(this.itemRecibido) !== JSON.stringify(this.originalItem)) {
+          this.hasChanges = true;
+        } else {
+          this.hasChanges = false;
+        }
+      }
+    }
+  }
 };
 </script>
 

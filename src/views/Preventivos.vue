@@ -19,14 +19,12 @@ import TareaDetail from "@/components/TareaDetail.vue";
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
-import TableCrudPreventivos from "@/components/TableCrudPreventivos.vue";
+import TableCrudPreventivos from "@/components/preventivsComponents/TableCrudPreventivos.vue";
 
-import selectedTabla from "@/components/selectedTabla.vue";
 export default {
   data: () => ({}),
 
   components: {
-    selectedTabla,
     TareaDetail,
     SideBar,
     Navbar,

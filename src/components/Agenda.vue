@@ -1,6 +1,6 @@
 <template>
   <v-row class="fill-height">
-    <v-col>
+    <v-col cols="9">
       <v-sheet height="64">
         <v-toolbar flat color="white">
           <v-btn color="primary" dark class="mr-4" @click="dialog = true">
@@ -19,10 +19,7 @@
           <v-spacer></v-spacer>
           <v-menu bottom right>
             <template v-slot:activator="{ on }">
-              <v-btn
-                outlined
-                v-on="on"
-              >
+              <v-btn outlined v-on="on">
                 <span>{{ typeToLabel[type] }}</span>
                 <v-icon right>mdi-menu-down</v-icon>
               </v-btn>
@@ -45,12 +42,11 @@
         </v-toolbar>
       </v-sheet>
       <v-sheet height="600">
-        
         <v-calendar
           ref="calendar"
           v-model="focus"
           color="primary"
-          :events="events"
+          :events="filteredEvents"
           :event-color="getEventColor"
           :event-margin-bottom="3"
           :now="today"
@@ -63,106 +59,25 @@
           locale="es"
           :short-weekdays="false"
         ></v-calendar>
-
-        <!-- Modal Agregar Evento -->
-        <v-dialog v-model="dialog">
-          <v-card>
-            <v-container>
-              <v-form @submit.prevent="addEvent">
-                <v-text-field 
-                  type="text" label="Agregar Nombre" v-model="name">
-                </v-text-field>
-                <v-text-field 
-                  type="text" label="Agregar un Detalle" v-model="details">
-                </v-text-field>
-                <v-text-field 
-                  type="date" label="Inicio del evento" v-model="start">
-                </v-text-field>
-                <v-text-field 
-                  type="date" label="Fin del evento" v-model="end">
-                </v-text-field>
-                <v-text-field 
-                  type="color" label="Color del evento" v-model="color">
-                </v-text-field>
-                <v-btn type="submit" color="primary" class="mr-4" 
-                @click.stop="dialog = false">Agregar</v-btn>
-
-                   <textarea-autosize
-                  v-model="selectedEvent.details"
-                  type="text"
-                  style="width: 100%"
-                  :min-height="100"
-                ></textarea-autosize>
-              </v-form>
-            </v-container>
-          </v-card>
-        </v-dialog>
-
-
-        <v-menu
-          v-model="selectedOpen"
-          :close-on-content-click="false"
-          :activator="selectedElement"
-          offset-x
-        >
-          <v-card
-            color="grey lighten-4"
-            min-width="350px"
-            flat
-          >
-            <v-toolbar
-              :color="selectedEvent.color"
-              dark
-            >
-              <v-btn icon @click="deleteEvent(selectedEvent)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-              <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
-              <v-spacer></v-spacer>
-            </v-toolbar>
-
-
-            <v-card-text>
-             
-              <v-form v-if="currentlyEditing !== selectedEvent.id">
-                {{selectedEvent.name}} - {{selectedEvent.details}}
-              </v-form>
-
-              <v-form v-else>
-
-                <v-text-field 
-                  type="text" v-model="selectedEvent.name"
-                  label="Editar Nombre">
-                </v-text-field>
-
-                <textarea-autosize
-                  v-model="selectedEvent.details"
-                  type="text"
-                  style="width: 100%"
-                  :min-height="100"
-                ></textarea-autosize>
-
-              </v-form>
-
-            </v-card-text>
-
-            
-            <v-card-actions>
-              <v-btn
-                text
-                color="secondary"
-                @click="selectedOpen = false"
-              >
-                Cancel
-              </v-btn>
-              <v-btn text v-if="currentlyEditing !== selectedEvent.id"
-              @click.prevent="editEvent(selectedEvent.id)">Editar</v-btn>
-
-              <v-btn text v-else  @click.prevent="updateEvent(selectedEvent)">Guardar Cambios</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-menu>
       </v-sheet>
+    </v-col>
+    <v-col cols="3">
+      <v-card class="mt-4">
+        <v-card-text>
+          <div class="text-center">
+            <h3>{{ getEventCountThisWeek }}</h3>
+            <span>Eventos esta semana</span>
+          </div>
+        </v-card-text>
+      </v-card>
+
+      <v-alert
+        v-if="getPastDueEventsCount > 0"
+        type="error"
+        class="mt-4 blinking"
+      >
+        Tienes {{ getPastDueEventsCount }} evento(s) atrasado(s).
+      </v-alert>
     </v-col>
   </v-row>
 </template>
@@ -195,6 +110,27 @@ import { updateDoc } from 'firebase/firestore'
       currentlyEditing: null
     }),
     computed: {
+      getPastDueEventsCount() {
+      const today = new Date();
+      return this.events.filter((event) => {
+        const eventEnd = new Date(event.end);
+        return eventEnd < today;
+      }).length;
+    },
+      getEventCountThisWeek() {
+      const today = new Date();
+      const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+      const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - today.getDay()));
+
+      return this.events.filter((event) => {
+        const eventEnd = new Date(event.end);
+        return eventEnd >= startOfWeek && eventEnd <= endOfWeek;
+      }).length;
+    },
+      filteredEvents() {
+      const today = new Date().toISOString().substr(0, 10);
+      return this.events.filter((event) => event.end >= today);
+    },
       title () {
         const { start, end } = this
         if (!start || !end) {
@@ -357,3 +293,21 @@ import { updateDoc } from 'firebase/firestore'
     },
   }
 </script>
+<style>
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+  
+}
+
+.blinking {
+  animation: blink 2s infinite;
+}
+</style>
