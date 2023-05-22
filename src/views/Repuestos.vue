@@ -12,7 +12,7 @@
               <Contact />
             </v-col>
             <v-col cols="12" sm="12">
-              <TableCrudRepuestos />
+              <TableCrudSpare />
             </v-col>
           </v-row>
         </v-col>
@@ -30,7 +30,7 @@ import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
 import Doctor from "../components/DataPicker.vue";
-import TableCrudRepuestos from "../components/TableCRUDRepuestos.vue";
+import TableCrudSpare from "../components/repuestosComponents/TableCrudSpare.vue";
 
 export default {
   data: () => ({}),
@@ -40,7 +40,7 @@ export default {
     Navbar,
     Contact,
     Doctor,
-    TableCrudRepuestos, 
+    TableCrudSpare, 
   },
 };
 </script>

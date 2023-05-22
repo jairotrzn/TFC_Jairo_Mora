@@ -54,11 +54,14 @@
 </template>
 
 <script>
-import { db, collection, getDocs, addDoc, deleteDoc, doc } from "@/main";
-import eventBus from "@/config/eventBus";
-import { v4 as uuidv4 } from "uuid";
+/**
+ * Vue component for managing preventives.
+ */
+ import eventBus from "@/config/eventBus";
 import PreventivsDetail from "@/components/preventivsComponents/PreventivsDetail.vue";
 import CreatePreventiv from "./CreatePreventiv.vue";
+import preventivRepository from "@/repository/preventivRepository";
+
 export default {
   components: {
     PreventivsDetail,
@@ -75,15 +78,15 @@ export default {
       prevents: [],
       headers: [
         {
-          text: "Cod.Acceso",
+          text: "Access Code",
           align: "start",
           filterable: false,
           value: "accessCode",
         },
-        { text: "Cod.Máquina", value: "machineCode.machineCode" },
-        { text: "Fecha Inicio", align: "center", value: "startDate" },
-        { text: "Estado", align: "center", value: "state" },
-        { text: "Acciones", align: "center", value: "actions" },
+        { text: "Machine Code", value: "machineCode.machineCode" },
+        { text: "Start Date", align: "center", value: "startDate" },
+        { text: "Status", align: "center", value: "state" },
+        { text: "Actions", align: "center", value: "actions" },
       ],
     };
   },
@@ -93,6 +96,10 @@ export default {
     this.getTareas();
   },
   computed: {
+    /**
+     * Filters the tasks based on the search term.
+     * @returns {Array} - Filtered tasks.
+     */
     filteredTareas() {
       return this.tareas.filter((tareas) => {
         const searchTerm = this.search.toLowerCase();
@@ -103,13 +110,21 @@ export default {
         );
       });
     },
+    /**
+     * Checks if the machine code is invalid.
+     * @returns {string} - Error message if the machine code is invalid, empty string otherwise.
+     */
     getMachineCodeError() {
       if (this.machineCode && !this.machines.includes(this.machineCode)) {
-        return "Opción no disponible";
+        return "Option not available";
       } else {
         return "";
       }
     },
+    /**
+     * Checks if the form is incomplete.
+     * @returns {boolean} - True if the form is incomplete, false otherwise.
+     */
     isFormIncomplete() {
       return (
         !this.namePersonInCharge ||
@@ -121,109 +136,55 @@ export default {
   },
 
   methods: {
+    /**
+     * Confirms the deletion of a preventive.
+     * @param {Object} item - The preventive item to be deleted.
+     */
     confirmDelete(item) {
-      if (confirm("¿Estás seguro de que deseas eliminar?")) {
+      if (confirm("Are you sure you want to delete?")) {
         this.deletePreventivo(item);
         this.getPreventivos();
       }
     },
+    /**
+     * Handles the event when a preventive is created.
+     */
     handlePreventivCreated() {
       this.dialogCreatPreventivo = false;
       this.getPreventivos();
     },
-    async getTareas() {
-      try {
-        const snapshot = await getDocs(collection(db, "tareas"));
-        const tareasDb = [];
-
-        snapshot.forEach((doc) => {
-          let tareasData = doc.data();
-          tareasData.id = doc.id;
-          tareasDb.push(tareasData);
-        });
-
-        this.tareas = tareasDb;
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    validateForm() {
-      this.$refs.form.validate();
-    },
+  
+    /**
+     * Sends the selected item through the event bus.
+     * @param {Object} item - The selected item.
+     */
     sendItem(item) {
       eventBus.$emit("item-selected", item);
     },
+    /**
+     * Deletes a preventive item.
+     * @param {Object} item - The item to be deleted.
+     */
     async deletePreventivo(item) {
       try {
-        const docRef = doc(db, "preventivos", item.id);
-        await deleteDoc(docRef);
-        this.getPreventivos();
+        await preventivRepository.delete(item)
       } catch (error) {
-        console.log(error);
+        console.error(error)
       }
     },
-    async getMachines() {
-      try {
-        const snapshot = await getDocs(collection(db, "machines"));
-        const machines = [];
-
-        snapshot.forEach((doc) => {
-          let machinesData = doc.data();
-          machinesData.id = doc.id;
-          machines.push(machinesData);
-        });
-
-        this.machines = machines;
-      } catch (error) {
-        console.log(error);
-      }
-    },
+    /**
+     * Retrieves all preventives.
+     */
     async getPreventivos() {
       try {
-        const snapshot = await getDocs(collection(db, "preventivos"));
-        const preventivsDb = [];
-
-        snapshot.forEach((doc) => {
-          let preventivData = doc.data();
-          preventivData.id = doc.id;
-          preventivsDb.push(preventivData);
-        });
-
-        this.prevents = preventivsDb;
+        this.prevents = await preventivRepository.getAll()
       } catch (error) {
-        console.log(error);
+        console.error(error)
       }
-    },
-    async addPreventivo() {
-      try {
-        await addDoc(collection(db, "preventivos"), {
-          namePersonInCharge: this.namePersonInCharge,
-          accessCode: this.generateUniqueId(),
-          machineCode: this.machineCode,
-          tareas: this.selectedPreventiv,
-          startDate: this.startDate,
-          state: "Pendiente",
-        });
-      } catch (error) {
-        console.log(error);
-      }
-      this.getPreventivos();
-      this.inizialite();
-    },
-    generateUniqueId() {
-      const uniqueId = uuidv4();
-      const truncatedId = uniqueId.substr(0, 6);
-      return truncatedId;
-    },
-    inizialite() {
-      this.nameTarea = "";
-      this.category = "";
-      this.selectedFrencunce = "";
-      this.datos = "";
-      this.selectedRepuesto = [];
     },
   },
 };
+
 </script>
 
 <style scoped>

@@ -2,13 +2,13 @@
   <v-card>
     <v-container>
       <v-form ref="form" @submit.prevent="addAveria">
-        <p><b>CREAR NUEVO CORRECTIVO</b></p>
+        <p><b>CREAR NUEVA TAREA CORRECTIVA</b></p>
 
         <v-row>
           <v-col cols="12" md="4">
             <v-text-field
               type="text"
-              label="Agregar nombre de responsable"
+              label="Ingrese el nombre del responsable"
               v-model="namePersonInCharge"
               :rules="[(v) => !!v || 'Este campo es obligatorio']"
               required
@@ -19,7 +19,7 @@
             <v-combobox
               v-model="machineCode"
               :items="machines"
-              label="Código Máquina"
+              label="Código de Máquina"
               item-text="machineCode"
               required
               dense
@@ -39,7 +39,7 @@
         </v-row>
         <v-textarea
           v-model="descriptionDefault"
-          label="Descripción de la averia"
+          label="Descripción de la tarea"
           auto-grow
           outlined
           rows="3"
@@ -54,7 +54,7 @@
           class="mr-4"
           @click.stop="validateForm"
           :disabled="isFormIncomplete"
-          >Crear Nuevo Correctivo</v-btn
+          >Crear Nueva Tarea Correctiva</v-btn
         >
         <br />
       </v-form>
@@ -64,58 +64,53 @@
 
 <script>
 /**
- * Component for creating a new corrective task.
+ * Componente para crear una nueva tarea correctiva.
  */
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/main";
 import { v4 as uuidv4 } from "uuid";
 
+import faultRepository from "@/repository/faultRepository";
+
 export default {
   /**
-   * Component data.
+   * Datos del componente.
    */
   data() {
     return {
-      /** Default description of the task. */
-      descriptionDefault: "",
-      /** Start date of the task. */
-      startDate: "",
-      /** Machine code for the task. */
-      machineCode: "",
-      /** Available machines. */
-      machines: [],
-      /** Name of the responsible person. */
-      namePersonInCharge: "",
-      /** State of the task. */
-      state: "Pendiente",
-      /** Password for the task. */
-      password: "",
+      descriptionDefault: "", // Descripción predeterminada de la tarea
+      startDate: "", // Fecha de inicio de la tarea
+      machineCode: "", // Código de máquina para la tarea
+      machines: [], // Máquinas disponibles
+      namePersonInCharge: "", // Nombre de la persona responsable
+      state: "Pendiente", // Estado de la tarea
+      password: "", // Contraseña para la tarea
     };
   },
 
   /**
-   * Lifecycle hook: Called when the component is created.
+   * Hook de ciclo de vida: Se llama cuando se crea el componente.
    */
   created() {
     this.getMachines();
   },
 
   /**
-   * Computed properties.
+   * Propiedades computadas.
    */
   computed: {
     /**
-     * Get the error message for the machine code.
-     * @returns {string} The error message if the machine code is invalid, empty string otherwise.
+     * Obtener el mensaje de error para el código de máquina.
+     * @returns {string} El mensaje de error si el código de máquina no es válido, cadena vacía en caso contrario.
      */
     getMachineCodeError() {
       return this.machineCode && !this.machines.includes(this.machineCode)
-        ? "Option not available"
+        ? "Opción no disponible"
         : "";
     },
     /**
-     * Check if the form is incomplete.
-     * @returns {boolean} True if any of the form fields are incomplete, false otherwise.
+     * Verificar si el formulario está incompleto.
+     * @returns {boolean} Verdadero si alguno de los campos del formulario está incompleto, falso en caso contrario.
      */
     isFormIncomplete() {
       return (
@@ -128,18 +123,18 @@ export default {
   },
 
   /**
-   * Component methods.
+   * Métodos del componente.
    */
   methods: {
     /**
-     * Validate the form.
+     * Validar el formulario.
      */
     validateForm() {
       this.$refs.form.validate();
     },
 
     /**
-     * Fetch the available machines.
+     * Obtener las máquinas disponibles.
      */
     async getMachines() {
       try {
@@ -152,29 +147,32 @@ export default {
         console.log(error);
       }
     },
+
     /**
-     * Generates a unique ID with a maximum length of 6 characters.
-     * @returns {string} The generated unique ID.
+     * Generar un ID único con una longitud máxima de 6 caracteres.
+     * @returns {string} El ID único generado.
      */
     generateUniqueId() {
       const uniqueId = uuidv4();
       const truncatedId = uniqueId.substr(0, 6);
       return truncatedId;
     },
+
     /**
-     * Add a new task.
+     * Agregar una nueva tarea.
      */
     async addAveria() {
+      const faultData = {
+        namePersonInCharge: this.namePersonInCharge,
+        machineCode: this.machineCode,
+        startDate: this.startDate,
+        description: this.descriptionDefault,
+        accessCode: this.generateUniqueId(),
+        state: this.state,
+        password: this.password,
+      };
       try {
-        await addDoc(collection(db, "averias"), {
-          namePersonInCharge: this.namePersonInCharge,
-          machineCode: this.machineCode,
-          startDate: this.startDate,
-          description: this.descriptionDefault,
-          accessCode: this.generateUniqueId(),
-          state: this.state,
-          password: this.password,
-        });
+        await faultRepository.save(faultData);
         this.$emit("averiaCreated");
       } catch (error) {
         console.log(error);
@@ -184,7 +182,7 @@ export default {
     },
 
     /**
-     * Initialize the form.
+     * Inicializar el formulario.
      */
     initializeForm() {
       this.namePersonInCharge = "";

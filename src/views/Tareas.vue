@@ -13,7 +13,7 @@
               <Contact />
             </v-col>
             <v-col cols="12" sm="12">
-             <TableCrudTareas/>
+             <TableCrudTask/>
             </v-col>
           </v-row>
         </v-col>
@@ -28,11 +28,11 @@
 
 <script>
 // @ is an alias to /src
-import TareaDetail from '@/components/TareaDetail.vue'
+import TareaDetail from '@/components/tareasComponents/TareaDetail.vue'
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
-import TableCrudTareas from "../components/TableCrudTareas.vue";
+import TableCrudTask from "@/components/tareasComponents/TableCrudTask.vue"
 
 export default {
   data: () => ({}),
@@ -42,8 +42,7 @@ export default {
     SideBar,
     Navbar,
     Contact,
-    
-    TableCrudTareas, 
+    TableCrudTask, 
   },
 };
 </script>

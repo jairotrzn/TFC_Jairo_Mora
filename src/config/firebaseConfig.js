@@ -1,27 +1,22 @@
-/**
- * Firebase Configuration
- * Contains Firebase configuration details and exports Firebase app and Firestore functions
- */
 
-// Import Firebase functions
+
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, doc, deleteDoc, query, where,updateDoc } from 'firebase/firestore';
+import { getFirestore,collection, getDocs,addDoc,doc,deleteDoc,query,where,updateDoc} from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged,projectAuth  } from "firebase/auth";
 
-// Firebase configuration object
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-auth-domain",
-  projectId: "your-project-id",
-  storageBucket: "your-storage-bucket",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyCNc7UgKKvFKhFliYc5cwFN09QJeqTjj48",
+  authDomain: "calendariomantenimiento-d401a.firebaseapp.com",
+  projectId: "calendariomantenimiento-d401a",
+  storageBucket: "calendariomantenimiento-d401a.appspot.com",
+  messagingSenderId: "966712255259",
+  appId: "1:966712255259:web:3baf9b6f4d3174f11669be"
 };
 
-// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app)
 
-// Export Firestore instance
-export const db = getFirestore(app);
+ export const db = getFirestore(app);
+ export {collection,getDocs,addDoc,doc,deleteDoc,query,where,updateDoc}
+ export{app,auth,signInWithEmailAndPassword,onAuthStateChanged }
 
-// Export Firestore functions
-export { collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc};

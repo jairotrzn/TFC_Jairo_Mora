@@ -15,7 +15,6 @@
 
 <script>
 // @ is an alias to /src
-import TareaDetail from "@/components/TareaDetail.vue";
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
 import Contact from "../components/Contact.vue";
@@ -25,7 +24,7 @@ export default {
   data: () => ({}),
 
   components: {
-    TareaDetail,
+    
     SideBar,
     Navbar,
     Contact,

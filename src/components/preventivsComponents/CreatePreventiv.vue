@@ -77,137 +77,171 @@
 </template>
 
 <script>
-import { addDoc, collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/main";
 import { v4 as uuidv4 } from "uuid";
+import machineRepository from '@/repository/machineRepository';
+import preventivRepository from "@/repository/preventivRepository";
+import taskRepository from "@/repository/taskRepository";
 
 export default {
-data() {
-  return {
-    startDate: "",
-    machineCode: "",
-    machines: [],
-    tareas: [],
-    namePersonInCharge: "",
-    selectedPreventiv: [],
-    search: "",
-    headersTablaTareas: [
-      { text: "Nombre", value: "nameTarea" },
-      {
-        text: "Categoria",
-        align: "start",
-        filterable: false,
-        value: "category",
-      },
-      { text: "Frecuencia", align: "center", value: "selectedFrencunce" },
-    ],
-  };
-},
-
-created() {
-  this.getMachines();
-  this.getTareas();
-},
-
-computed: {
-  filteredTareas() {
-    const searchTerm = this.search.toLowerCase();
-    return this.tareas.filter(
-      (tarea) =>
-        tarea.nameTarea.toLowerCase().includes(searchTerm) ||
-        tarea.category.toLowerCase().includes(searchTerm) ||
-        tarea.selectedFrencunce.toLowerCase().includes(searchTerm)
-    );
-  },
-  getMachineCodeError() {
-    return this.machineCode && !this.machines.includes(this.machineCode)
-      ? "Opción no disponible"
-      : "";
-  },
-  isFormIncomplete() {
-    return (
-      !this.namePersonInCharge ||
-      !this.machineCode ||
-      !this.startDate ||
-      this.selectedPreventiv.length === 0
-    );
-  },
-},
-
-methods: {
-  async getTareas() {
-    try {
-      const snapshot = await getDocs(collection(db, "tareas"));
-      this.tareas = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    } catch (error) {
-      console.log(error);
-    }
+  data() {
+    /**
+     * Vue data properties
+     * @returns {Object}
+     */
+    return {
+      startDate: "", // Start date for the preventive
+      machineCode: "", // Selected machine code
+      machines: [], // List of machines
+      tareas: [], // List of tasks
+      namePersonInCharge: "", // Name of the responsible person
+      selectedPreventiv: [], // Selected preventive tasks
+      search: "", // Search term for task filtering
+      headersTablaTareas: [ // Headers for the task data table
+        { text: "Name", value: "nameTarea" },
+        {
+          text: "Category",
+          align: "start",
+          filterable: false,
+          value: "category",
+        },
+        { text: "Frequency", align: "center", value: "selectedFrencunce" },
+      ],
+    };
   },
 
-  validateForm() {
-    this.$refs.form.validate();
+  created() {
+    /**
+     * Vue lifecycle hook: created
+     * Called when the component is created
+     */
+    this.getMachines();
+    this.getTareas();
   },
 
-  async getMachines() {
-    try {
-      const snapshot = await getDocs(collection(db, "machines"));
-      this.machines = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    } catch (error) {
-      console.log(error);
-    }
+  computed: {
+    /**
+     * Computed properties for the component
+     * @returns {Object}
+     */
+    filteredTareas() {
+      /**
+       * Filtered tasks based on the search term
+       * @returns {Array} - Filtered tasks
+       */
+      const searchTerm = this.search.toLowerCase();
+      return this.tareas.filter(
+        (tarea) =>
+          tarea.nameTarea.toLowerCase().includes(searchTerm) ||
+          tarea.category.toLowerCase().includes(searchTerm) ||
+          tarea.selectedFrencunce.toLowerCase().includes(searchTerm)
+      );
+    },
+    getMachineCodeError() {
+      /**
+       * Error message for the machine code combobox
+       * @returns {String} - Error message
+       */
+      return this.machineCode && !this.machines.includes(this.machineCode)
+        ? "Option not available"
+        : "";
+    },
+    isFormIncomplete() {
+      /**
+       * Checks if the form is incomplete
+       * @returns {Boolean} - True if the form is incomplete, False otherwise
+       */
+      return (
+        !this.namePersonInCharge ||
+        !this.machineCode ||
+        !this.startDate ||
+        this.selectedPreventiv.length === 0
+      );
+    },
   },
 
-  async addPreventivo() {
-    try {
-      await addDoc(collection(db, "preventivos"), {
+  methods: {
+    /**
+     * Fetches the list of tasks
+     * @returns {void}
+     */
+    async getTareas() {
+      try {
+        this.tareas = await taskRepository.getAll();
+      } catch (error) {
+        console.error(error)
+      }
+    },
+
+    /**
+     * Validates the form
+     * @returns {void}
+     */
+    validateForm() {
+      this.$refs.form.validate();
+    },
+
+    /**
+     * Fetches the list of machines
+     * @returns {void}
+     */
+    async getMachines() {
+      try {
+        this.machines = await machineRepository.getAll();
+      } catch (error) {
+        console.error(error)
+      }
+    },
+
+    /**
+     * Adds a new preventive
+     * @returns {void}
+     */
+    async addPreventivo() {
+      const preventivData = {
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
         tareas: this.selectedPreventiv,
         startDate: this.startDate,
         accessCode: this.generateUniqueId(),
-        state: "Pendiente",
-        password:"",
-      });
-      this.$emit('preventivCreated');
-    } catch (error) {
-      console.log(error);
-    }
+        state: "Pending",
+        password: "",
+      };
 
-    this.initializeForm();
-  },
+      try {
+        await preventivRepository.save(preventivData);
+        this.$emit('preventivCreated');
+      } catch (error) {
+        console.log(error);
+      }
+      this.getPreventivos();
+      this.initializeForm();
+    },
 
-  generateUniqueId() {
-    const uniqueId = uuidv4();
-    return uniqueId.substr(0, 6);
-  },
+    /**
+     * Generates a unique ID
+     * @returns {String} - Unique ID
+     */
+    generateUniqueId() {
+      const uniqueId = uuidv4();
+      return uniqueId.substr(0, 6);
+    },
 
-  initializeForm() {
-    this.namePersonInCharge = "";
-    this.machineCode = "";
-    this.startDate = "";
-    this.selectedPreventiv = [];
+    /**
+     * Initializes the form
+     * @returns {void}
+     */
+    initializeForm() {
+      this.namePersonInCharge = "";
+      this.machineCode = "";
+      this.startDate = "";
+      this.selectedPreventiv = [];
+    },
   },
-
-  async getPreventivos() {
-    try {
-      const snapshot = await getDocs(collection(db, "preventivos"));
-      this.prevents = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    } catch (error) {
-      console.log(error);
-    }
-  },
-},
 };
 </script>
+
 
 <style scoped>
 .disabled {
