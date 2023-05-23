@@ -2,7 +2,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore,collection, getDocs,addDoc,doc,deleteDoc,query,where,updateDoc} from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged,projectAuth  } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCNc7UgKKvFKhFliYc5cwFN09QJeqTjj48",
@@ -18,5 +18,5 @@ const auth = getAuth(app)
 
  export const db = getFirestore(app);
  export {collection,getDocs,addDoc,doc,deleteDoc,query,where,updateDoc}
- export{app,auth,signInWithEmailAndPassword,onAuthStateChanged }
+ export{auth,signInWithEmailAndPassword,onAuthStateChanged }
 

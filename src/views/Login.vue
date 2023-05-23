@@ -1,121 +1,109 @@
 <template>
-    <v-app>
-    
-    <v-sheet class="bg-deep-white pa-12" rounded>
-        <v-card class="mx-auto px-6 py-8" max-width="344">
-          <v-form v-model="form" @submit.prevent="onSubmit">
-            <v-text-field
-              v-model="email"
-              :readonly="loading"
-              :rules="[required, validateEmail]"
-              :error-messages="emailErrors"
-              class="mb-2"
-              clearable
-              label="Email"
-              @blur="checkEmailFormat"
-            ></v-text-field>
-    
-            <v-text-field
-              v-model="password"
-              :readonly="loading"
-              :rules="[required]"
-              clearable
-              label="Password"
-              placeholder="Introduce tu contraseña"
-              :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-              :type="showPassword ? 'text' : 'password'"
-              @click:append="showPassword = !showPassword"
-            ></v-text-field>
-    
-            <br>
-    
-            <v-btn
-              :disabled="!form"
-              :loading="loading"
-              block
-              color="success"
-              size="large"
-              type="submit"
-              variant="elevated"
-              @click="autentication"
-            >
-              Sign In
-            </v-btn>
-          </v-form>
-        </v-card>
-      </v-sheet>
-    </v-app>
-      
-    </template>
-    
-    <script>
-    import { Auth, signInWithEmailAndPassword, onAuthStateChanged } from '@/config/firebaseConfig';
-    
-    
-    export default {
-      created() {
-        onAuthStateChanged(Auth, user => {
-          if (user) {
-            console.log(`Usuario autenticado: ${user.email}`);
-               this.$router.push('/home');
-    
+  <v-app>
+    <v-main class="center-content">
+      <v-container fluid>
+        <v-row justify="center">
+          <v-col cols="12" sm="8" md="4">
+            <v-card class="elevation-12">
+              <v-img src="@/assets/LogoProyecto.jpg" height="200"></v-img>
+              <v-toolbar color="primary" dark>
+                <v-toolbar-title>Iniciar sesión</v-toolbar-title>
+              </v-toolbar>
+              <v-card-text>
+                <v-form @submit.prevent="login">
+                  <v-text-field
+                    v-model="email"
+                    label="Email"
+                    required
+                    :error-messages="emailErrors"
+                    @blur="validateEmail"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="password"
+                    :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    :type="showPassword ? 'text' : 'password'"
+                    label="Contraseña"
+                    required
+                    @click:append="showPassword = !showPassword"
+                  ></v-text-field>
+                  <v-btn type="submit" color="primary" block>Iniciar sesión</v-btn>
+                </v-form>
+                <v-alert v-if="errorMessage" type="error" class="mt-4">{{ errorMessage }}</v-alert>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
+
+<script>
+import { auth, signInWithEmailAndPassword,onAuthStateChanged} from '@/config/firebaseConfig';
+
+export default {
+  data() {
+    return {
+      email: "",
+      password: "",
+      emailErrors: [],
+      errorMessage: "",
+      showPassword: false
+    };
+  },
+  created() {
+    onAuthStateChanged(Auth, user => {
+      if (user) {
+        console.log(`Usuario autenticado: ${user.email}`);
+        // redirigir al usuario a la vista de home
+           this.$router.push('/home');
+
+      }
+    });
+  },
+  methods: {
+    login() {
+      signInWithEmailAndPassword(auth, this.email, this.password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(`Usuario autenticado: ${user.email}`);
+          this.$router.push('/home');
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.error(`Error de autenticación: ${errorCode} - ${errorMessage}`);
+          if (errorCode === "auth/user-not-found" || errorCode === "auth/wrong-password") {
+            this.errorMessage = "Email o contraseña incorrectos";
+          } else {
+            this.errorMessage = "Error de autenticación";
           }
         });
-      },
-    
-      data() {
-        return {
-          form: false,
-          email: null,
-          password: null,
-          loading: false,
-          showPassword: false,
-          emailErrors: []
-        }
-      },
-    
-      methods: {
-        autentication () {
-          signInWithEmailAndPassword(Auth, this.email, this.password)
-            .then(userCredential => {
-              // La autenticación se realizó correctamente
-              const user = userCredential.user;
-             
-            })
-            .catch(error => {
-              // Si se produce un error en la autenticación, se muestra en la consola
-              const errorCode = error.code;
-              const errorMessage = error.message;
-              console.error(`Error de autenticación: ${errorCode} - ${errorMessage}`);
-            });
-        },
-    
-        onSubmit() {
-          if (!this.form) return;
-          this.loading = true;
-          setTimeout(() => (this.loading = false), 2000);
-        },
-    
-        required(v) {
-          return !!v || "Este campo es obligatorio";
-        },
-    
-        validateEmail(v) {
-          if (!v) return true;
-          const emailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return emailFormat.test(v) || "Formato de email no valido";
-        },
-    
-        checkEmailFormat() {
-          if (this.email && !this.validateEmail(this.email)) {
-            this.emailErrors.push("Formarto de email no valido");
-          } else {
-            this.emailErrors = [];
-          }
-        }
+    },
+    validateEmail() {
+      if (this.email && !this.validateEmailFormat(this.email)) {
+        this.emailErrors = ["Formato de email no válido"];
+      } else {
+        this.emailErrors = [];
       }
-    };
-    </script>
-    
-    
-    
+    },
+    validateEmailFormat(email) {
+      const emailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailFormat.test(email);
+    }
+  }
+};
+</script>
+
+<style>
+.elevation-12 {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2);
+}
+
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+</style>

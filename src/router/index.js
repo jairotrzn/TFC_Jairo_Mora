@@ -1,11 +1,11 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
-import { getAuth } from 'firebase/auth';
+import { auth } from '@/config/firebaseConfig';
 
 Vue.use(VueRouter);
 
-const auth = getAuth();
+
 
 const routes = [
   {
@@ -62,7 +62,7 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 });
-
+ 
 router.beforeEach((to, from, next) => {
   const currentUser = auth.currentUser;
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);

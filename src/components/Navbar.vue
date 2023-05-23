@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import { getAuth, signOut } from "firebase/auth";
 export default {
   data: () => ({
     logoutDialogVisible: false,

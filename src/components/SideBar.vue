@@ -58,7 +58,7 @@ export default {
     selectedItem: null,
     drawer: null,
     items: [
-      { icon: "mdi-home", to: "/", text: "Home" },
+      { icon: "mdi-home", to: "/home", text: "Home" },
       { icon: "precision_manufacturing", to: "machines", text: "Machines" },
       { icon: "build", to: "repuestos", text: "Repuestos" },
       { icon: "mdi-calendar-check", to:"tareas", text: "Tareas" },

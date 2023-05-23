@@ -37,7 +37,7 @@
   </template>
   
   <script>
-  import { db, collection, getDocs, deleteDoc, doc, query, where } from "@/main";
+import { db, collection, getDocs, deleteDoc, doc, query, where } from "@/config/firebaseConfig";
   import eventBus from "@/config/eventBus";
   import PreventivsDetail from '@/components/preventivsComponents/PreventivsDetail.vue'
   export default {
@@ -109,7 +109,6 @@
   
           this.prevents = preventivsDb;
         } catch (error) {
-            console.log(this.itemRecibido.machineCode)
           console.log(error);
         }
       },
