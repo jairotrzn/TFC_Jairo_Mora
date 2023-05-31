@@ -8,8 +8,7 @@
     <v-container>
       <v-row>
           <v-row>
-            <v-col cols="12" sm="12">
-              <Contact />
+            <v-col cols="12" sm="12">     
             </v-col>
             <v-col cols="12" sm="12">
               <TableCrudMachine />
@@ -24,8 +23,6 @@
 // @ is an alias to /src
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
-import Contact from "../components/Contact.vue";
-import Doctor from "../components/DataPicker.vue";
 import TableCrudMachine from "../components/machineComponents/TableCrudMachines.vue";
 
 export default {
@@ -34,8 +31,6 @@ export default {
   components: {
     SideBar,
     Navbar,
-    Contact,
-    Doctor,
     TableCrudMachine,
   },
 };

@@ -11,19 +11,47 @@ import {
 } from "@/repository/dataBase";
 const COLLECTION_NAME = "preventivos";
 export default {
+
+        async findByMachineCode(machineCode) {
+        
+        try {
+          const snapshot = await getDocs(
+            query(collection(db, COLLECTION_NAME), where("machineCode.machineCode", "==", machineCode))
+          );
+          const preventivsDb = [];
+  
+          snapshot.forEach((doc) => {
+            let preventivData = doc.data();
+            preventivData.id = doc.id;
+            preventivsDb.push(preventivData);
+          });
+  
+        return preventivsDb;
+        } catch (error) {
+          console.log(error);
+          return []
+        }
+      },
   /**
    * Update a machine.
    * @param {Object} preventvData - The machine data to update.
    * @returns {void}
    */
-  async upDate(preventvData) {
+  async upDate(faultData) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, preventvData.id);
-      await updateDoc(docRef, preventvData);
-
-      // Update UI or perform other actions
+      const collectionRef = collection(db, COLLECTION_NAME);
+      const querySnapshot = await getDocs(query(collectionRef, where("accessCode", "==", faultData.accessCode)));
+      
+      if (querySnapshot.size === 1) {
+        const docRef = doc(collectionRef, querySnapshot.docs[0].id);
+        await updateDoc(docRef, faultData);
+      } else if (querySnapshot.size === 0) {
+        console.log("No se encontró ningún documento con el accessCode proporcionado.");
+      } else {
+        console.log("Se encontraron múltiples documentos con el mismo accessCode.");
+      }
     } catch (error) {
-      console.error("Error updating machine: ", error);
+      console.error('Error updating machine: ', error);
     }
   },
 
@@ -33,6 +61,7 @@ export default {
    * @returns {void}
    */
   async delete(preventvData) {
+
     try {
       const docRef = doc(db, COLLECTION_NAME, preventvData.id);
       await deleteDoc(docRef);
@@ -48,7 +77,6 @@ export default {
    * @returns {Array} - Array of machine objects.
    */
   async getAll() {
-    console.log("Estoy en el repositorio");
     try {
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
       const machines = [];

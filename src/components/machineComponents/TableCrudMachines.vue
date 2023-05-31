@@ -22,16 +22,18 @@
       :headers="headers"
       :items="machines"
       :search="search"
-      @click:row="selectedMachine = $event
-      sendItem(selectedMachine)
-      dialogMachineDetail = true"
+      @click:row="
+        selectedMachine = $event;
+        sendItem(selectedMachine);
+        dialogMachineDetail = true;
+      "
     >
       <template v-slot:item.actions="{ item }">
         <v-icon
           small
           class="mr-2"
           color="red"
-          @click="(selectedMachine = item),confirmDelete(selectedMachine)"
+          @click="(selectedMachine = item), confirmDelete(selectedMachine)"
           >mdi-delete</v-icon
         >
         <v-icon
@@ -46,28 +48,34 @@
       </template>
     </v-data-table>
     <v-expansion-panels>
-        <v-expansion-panel>
-          <v-expansion-panel-header><b>Características técnicas</b></v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <MachineDetail />
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          ><b>Características técnicas</b></v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <MachineDetail />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 
-        <v-expansion-panel>
-          <v-expansion-panel-header><b>Detalle preventivos</b></v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <tablePreventivMachineDetail/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          ><b>Detalle preventivos</b></v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <tablePreventivMachineDetail />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 
-        <v-expansion-panel>
-          <v-expansion-panel-header><b>Detalle averías</b></v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <!-- Aquí puedes incluir el componente correspondiente al detalle de averías -->
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-      </v-expansion-panels>
-   
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          ><b>Detalle averías</b></v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <tableFaultMachineDetailVue />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
+
     <!-- Modal Modificar Maquina -->
     <v-dialog v-model="dialogUpdate">
       <v-card>
@@ -248,7 +256,10 @@
               @click="dialogoConfirmUpdate = true"
               >Guardar Cambios</v-btn
             >
-            <v-btn color="primary" class="mr-4" @click="confirmUpDate(selectedMachine)"
+            <v-btn
+              color="primary"
+              class="mr-4"
+              @click="confirmUpDate(selectedMachine)"
               >Cancelar</v-btn
             >
           </v-form>
@@ -258,9 +269,8 @@
 
     <!-- Modal Agregar Maquina -->
     <v-dialog v-model="dialog">
-     <createMachine/>
+      <createMachine @machineCreated="handlePreventivCreated()" />
     </v-dialog>
-
   </v-card>
 </template>
 
@@ -271,10 +281,12 @@
  */
 
 import eventBus from "@/config/eventBus";
-import MachineDetail from '@/components/machineComponents/machineDetails.vue'
-import tablePreventivMachineDetail from '@/components/machineComponents/tablePreventivMachineDetail.vue'
-import createMachine from '@/components/machineComponents/createMachin.vue'
+import MachineDetail from "@/components/machineComponents/machineDetails.vue";
+import tablePreventivMachineDetail from "@/components/machineComponents/tablePreventivMachineDetail.vue";
+import createMachine from "@/components/machineComponents/createMachin.vue";
 import machineRepository from "@/repository/machineRepository";
+import tableFaultMachineDetailVue from "../averiasComponents/tableFaultMachineDetail.vue";
+import Constants from '@/assets/Constants'
 export default {
   /**
    * Component data.
@@ -282,7 +294,7 @@ export default {
    */
   data() {
     return {
-      dialogMachineDetail:false,
+      dialogMachineDetail: false,
       dialogDelete: false,
       dialogoConfirmUpdate: false,
       search: "",
@@ -320,20 +332,20 @@ export default {
 
       headers: [
         {
-          text: "Machine Code",
+          text: Constants.MACHINE_CODE,
           align: "start",
           filterable: false,
           value: "machineCode",
         },
-        { text: "Type", value: "type" },
+        { text: Constants.TIPO, value: "type" },
         { text: "Location", align: "center", value: "location" },
         {
-          text: "Main Motor Power",
+          text: Constants.POTENCIA_MOTOR_PRINCIPAL,
           align: "center",
           value: "mainMotorPower",
         },
-        { text: "Maximum Speed", align: "center", value: "maximumSpeed" },
-        { text: "Actions", value: "actions" },
+        { text: Constants.VELOCIDAD_MAXIMA, align: "center", value: "maximumSpeed" },
+        { text: Constants.ACCIONES, value: "actions" },
       ],
     };
   },
@@ -370,23 +382,45 @@ export default {
       );
     },
   },
-  components:{
+  components: {
+    tableFaultMachineDetailVue,
     MachineDetail,
-    tablePreventivMachineDetail,createMachine
+    tablePreventivMachineDetail,
+    createMachine,
   },
+
   methods: {
+    /**
+     * Handles the event when a new fault is created.
+     */
+    handlePreventivCreated() {
+      this.dialog = false;
+      this.getMachines();
+    },
+    /**
+     * Confirms the deletion of a machine item.
+     * @param {Object} item - The machine object to delete.
+     */
     confirmDelete(item) {
-        if (confirm("¿Estás seguro de que deseas eliminar?")) {
-          this.deleteMachine(item);
-          this.getMachines();
-        }
-      },
-      confirmUpDate(item) {
-        if (confirm("¿Estás seguro de que deseas modificar?")) {
-          this.updateMachine(item);
-          this.getMachines();
-        }
-      },
+      if (confirm(Constants.CONFIRM_DELETE)) {
+        this.deleteMachine(item);
+        this.getMachines();
+      }
+    },
+    /**
+     * Confirms the modification of a machine item.
+     * @param {Object} item - The machine object to modify.
+     */
+    confirmUpDate(item) {
+      if (confirm(Constants.CONFIRM_UP_DATE)) {
+        this.updateMachine(item);
+        this.getMachines();
+      }
+    },
+    /**
+     * Sends the selected machine item to another component.
+     * @param {Object} item - The selected machine object.
+     */
     sendItem(item) {
       eventBus.$emit("item-selected", item);
     },
@@ -416,36 +450,35 @@ export default {
      */
     async updateMachine(selectedMachine) {
       try {
-        const machineData ={
-          image:selectedMachine.image,
+        const machineData = {
+          image: selectedMachine.image,
           type: selectedMachine.type,
           location: selectedMachine.location,
           machineCode: selectedMachine.machineCode,
           department: selectedMachine.department,
-          mainMotorPower: selectedMachine.mainMotorPower,
-          feedMotorPower: selectedMachine.feedMotorPower,
-          pumpMotorPower: selectedMachine.pumpMotorPower,
-          current: selectedMachine.current,
-          maximumSpeed: selectedMachine.maximumSpeed,
-          minimumSpeed: selectedMachine.minimumSpeed,
-          numberOfSpeeds: selectedMachine.numberOfSpeeds,
-          maximumLongitudinalFeed: selectedMachine.maximumLongitudinalFeed,
-          numberOfLongitudinalFeeds: selectedMachine.numberOfLongitudinalFeeds,
-          maximumTransversalFeed: selectedMachine.maximumTransversalFeed,
-          numberOfTransversalFeeds: selectedMachine.numberOfTransversalFeeds,
-          maximumVerticalFeed: selectedMachine.maximumVerticalFeed,
-          numberOfVerticalFeeds: selectedMachine.numberOfVerticalFeeds,
-          minimumLongitudinalFeed: selectedMachine.minimumLongitudinalFeed,
-          minimumTransversalFeed: selectedMachine.minimumTransversalFeed,
-          minimumVerticalFeed: selectedMachine.minimumVerticalFeed,
-        }
+          mainMotorPower: +selectedMachine.mainMotorPower,
+          feedMotorPower: +selectedMachine.feedMotorPower,
+          pumpMotorPower: +selectedMachine.pumpMotorPower,
+          current: +selectedMachine.current,
+          maximumSpeed: +selectedMachine.maximumSpeed,
+          minimumSpeed: +selectedMachine.minimumSpeed,
+          numberOfSpeeds: +selectedMachine.numberOfSpeeds,
+          maximumLongitudinalFeed: +selectedMachine.maximumLongitudinalFeed,
+          numberOfLongitudinalFeeds: +selectedMachine.numberOfLongitudinalFeeds,
+          maximumTransversalFeed: +selectedMachine.maximumTransversalFeed,
+          numberOfTransversalFeeds: +selectedMachine.numberOfTransversalFeeds,
+          maximumVerticalFeed: +selectedMachine.maximumVerticalFeed,
+          numberOfVerticalFeeds: +selectedMachine.numberOfVerticalFeeds,
+          minimumLongitudinalFeed: +selectedMachine.minimumLongitudinalFeed,
+          minimumTransversalFeed: +selectedMachine.minimumTransversalFeed,
+          minimumVerticalFeed: +selectedMachine.minimumVerticalFeed,
+        };
         await machineRepository.upDate(machineData);
         this.dialogConfirmUpdate = false;
         this.dialogUpdate = false;
         this.selectedMachine = [];
       } catch (error) {
         this.getMachines();
-
       }
     },
     /**
@@ -467,10 +500,9 @@ export default {
      */
     async getMachines() {
       try {
-        this.machines = await machineRepository.getAll()
-            } catch (error) {
+        this.machines = await machineRepository.getAll();
+      } catch (error) {
         console.log(error);
-
       }
     },
     /**
@@ -500,8 +532,6 @@ export default {
       this.minimumTransversalFeed = null;
       this.minimumVerticalFeed = null;
     },
-   
   },
 };
-
 </script>

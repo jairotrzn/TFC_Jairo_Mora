@@ -1,4 +1,4 @@
-import  {db, collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc} from '@/repository/dataBase'
+import  {db, collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc,onSnapshot} from '@/repository/dataBase'
 const COLLECTION_NAME = 'machines';
 export default {
    
@@ -74,26 +74,26 @@ export default {
         return [];
       }
     },
-  
-    /**
+
+       /**
      * Add a new machine to the database.
      * @param {Object} machineData - The machine data to add.
      * @returns {void}
      */
-    async save(machineData) {
-      try {
-        const querySnapshot = await getDocs(
-          query(collection(db, COLLECTION_NAME), where('machineCode', '==', machineData.machineCode))
-        );
-        if (querySnapshot.size === 0) {
-          await addDoc(collection(db, COLLECTION_NAME), machineData);
-  
-          // Update UI or perform other actions
-        } else {
-          console.log('Ya existe una máquina con el mismo machineCode');
+       async save(machineData) {
+        try {
+          const querySnapshot = await getDocs(
+            query(collection(db, COLLECTION_NAME), where('machineCode', '==', machineData.machineCode))
+          );
+          if (querySnapshot.size === 0) {
+            await addDoc(collection(db, COLLECTION_NAME), machineData);
+    
+            // Update UI or perform other actions
+          } else {
+            console.log('Ya existe una máquina con el mismo machineCode');
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    },
-  };
+      },
+    };

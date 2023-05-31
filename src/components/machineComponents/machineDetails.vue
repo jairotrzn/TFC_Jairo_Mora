@@ -191,6 +191,8 @@
 <script>
 
 import eventBus from "@/config/eventBus";
+import Constants from '@/assets/Constants';
+
 export default {
   data() {
     return {
@@ -221,8 +223,7 @@ export default {
   },
   methods: {
     confirmUpdate() {
-      console.log("voy a actualizar " + this.itemRecibido.student)
-      if (confirm("¿Estás seguro de que deseas actualizar?")) {
+      if (confirm(Constants.CONFIRM_UP_DATE)) {
         this.upDate(this.itemRecibido);
       }
     },

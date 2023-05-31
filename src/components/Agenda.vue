@@ -46,7 +46,7 @@
   ref="calendar"
   v-model="focus"
   color="primary"
-  :events="filteredEvents"
+  :events="events"
   :event-color="getEventColor"
   :event-margin-bottom="3"
   :now="today"

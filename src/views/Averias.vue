@@ -6,8 +6,7 @@
     <SideBar />
     <Navbar />
     <v-container>
-      <Contact />
-      <br />
+     <br/>
       <TableCrudAverias />
     </v-container>
   </v-app>
@@ -17,7 +16,6 @@
 // @ is an alias to /src
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
-import Contact from "../components/Contact.vue";
 import TableCrudAverias from "@/components/averiasComponents/TableCrudAverias.vue";
 
 export default {
@@ -26,7 +24,6 @@ export default {
   components: {
     SideBar,
     Navbar,
-    Contact,
     TableCrudAverias,
   },
 };

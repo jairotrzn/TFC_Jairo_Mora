@@ -1,5 +1,5 @@
 <template>
-    <v-card>
+  <v-card>
     <v-container>
       <v-form @submit.prevent="addMachine">
         <p><b>CARACTERISTICAS TÉCNICAS</b></p>
@@ -10,7 +10,6 @@
               type="text"
               label="Agregar Tipo de maquina"
               v-model="type"
-              :error-messages="typeErrors"
               required
             ></v-text-field>
           </v-col>
@@ -97,8 +96,7 @@
               v-model="maximumSpeed"
               :rules="[
                 (val) =>
-                  val >= 0 ||
-                  'Lavelocidad máxima debe ser igual o mayor que 0',
+                  val >= 0 || 'Lavelocidad máxima debe ser igual o mayor que 0',
               ]"
             ></v-text-field>
           </v-col>
@@ -265,7 +263,6 @@
       </v-form>
     </v-container>
   </v-card>
-
 </template>
 
 <script>
@@ -275,9 +272,10 @@
  */
 
 import eventBus from "@/config/eventBus";
-import MachineDetail from '@/components/machineComponents/machineDetails.vue'
-import tablePreventivMachineDetail from '@/components/machineComponents/tablePreventivMachineDetail.vue'
-import machineRepository from '@/repository/machineRepository'
+import MachineDetail from "@/components/machineComponents/machineDetails.vue";
+import tablePreventivMachineDetail from "@/components/machineComponents/tablePreventivMachineDetail.vue";
+import machineRepository from "@/repository/machineRepository";
+import Constants from '@/assets/Constants'
 export default {
   /**
    * Component data.
@@ -285,7 +283,7 @@ export default {
    */
   data() {
     return {
-      dialogMachineDetail:false,
+      dialogMachineDetail: false,
       dialogDelete: false,
       dialogoConfirmUpdate: false,
       search: "",
@@ -294,49 +292,52 @@ export default {
       dialogUpdate: false,
       typeErrors: [],
 
-      binaryData: null,
+      binaryData: "",
 
       selectedMachine: [],
       item: null,
       formulario: false,
-      image: null,
-      type: null,
-      location: null,
-      machineCode: null,
-      department: null,
-      mainMotorPower: null,
-      feedMotorPower: null,
-      pumpMotorPower: null,
-      current: null,
-      maximumSpeed: null,
-      minimumSpeed: null,
-      numberOfSpeeds: null,
-      maximumLongitudinalFeed: null,
-      numberOfLongitudinalFeeds: null,
-      maximumTransversalFeed: null,
-      numberOfTransversalFeeds: null,
-      maximumVerticalFeed: null,
-      numberOfVerticalFeeds: null,
-      minimumLongitudinalFeed: null,
-      minimumTransversalFeed: null,
-      minimumVerticalFeed: null,
+      image: "",
+      type: "",
+      location: "",
+      machineCode: "",
+      department: "",
+      mainMotorPower: "",
+      feedMotorPower: "",
+      pumpMotorPower: "",
+      current: "",
+      maximumSpeed: "",
+      minimumSpeed: "",
+      numberOfSpeeds: "",
+      maximumLongitudinalFeed: "",
+      numberOfLongitudinalFeeds: "",
+      maximumTransversalFeed: "",
+      numberOfTransversalFeeds: "",
+      maximumVerticalFeed: "",
+      numberOfVerticalFeeds: "",
+      minimumLongitudinalFeed: "",
+      minimumTransversalFeed: "",
+      minimumVerticalFeed: "",
+
+
+      
 
       headers: [
         {
-          text: "Machine Code",
+          text: Constants.MACHINE_CODE,
           align: "start",
           filterable: false,
-          value: "machineCode",
+          value: Constants.VALUE_MACHINE_CODE,
         },
-        { text: "Type", value: "type" },
-        { text: "Location", align: "center", value: "location" },
+        { text:  Constants.TIPO, value:  Constants.VALUE_TYPE },
+        { text:  Constants.LOCALIZACION, align: "center", value:  Constants.VALUE_LOCATION },
         {
-          text: "Main Motor Power",
+          text:  Constants.POTENCIA_MOTOR_PRINCIPAL,
           align: "center",
-          value: "mainMotorPower",
+          value: Constants.VALUE_MAIN_MOTOR_POWER,
         },
-        { text: "Maximum Speed", align: "center", value: "maximumSpeed" },
-        { text: "Actions", value: "actions" },
+        { text:  Constants.VELOCIDAD_MAXIMA, align: "center", value:  Constants.VALUE_MAXIMUM_SPEED },
+        { text:  Constants.ACCIONES, value:  Constants.VALUE_ACTIONS },
       ],
     };
   },
@@ -373,9 +374,9 @@ export default {
       );
     },
   },
-  components:{
+  components: {
     MachineDetail,
-    tablePreventivMachineDetail
+    tablePreventivMachineDetail,
   },
   methods: {
     sendItem(item) {
@@ -428,16 +429,15 @@ export default {
           minimumLongitudinalFeed: selectedMachine.minimumLongitudinalFeed,
           minimumTransversalFeed: selectedMachine.minimumTransversalFeed,
           minimumVerticalFeed: selectedMachine.minimumVerticalFeed,
-        }
-        await machineRepository.upDate(machineData)
+        };
+        await machineRepository.upDate(machineData);
         this.dialogConfirmUpdate = false;
         this.dialogUpdate = false;
         this.selectedMachine = [];
         this.getMachines();
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-
     },
     /**
      * Delete a machine.
@@ -445,7 +445,7 @@ export default {
      * @returns {void}
      */
     async deleteMachine(item) {
-await machineRepository.delete(item)
+      await machineRepository.delete(item);
     },
     /**
      * Retrieve the list of machines from the database.
@@ -453,10 +453,9 @@ await machineRepository.delete(item)
      */
     async getMachines() {
       try {
-        this.machines = await machineRepository.getAll()
-
+        this.machines = await machineRepository.getAll();
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     },
     /**
@@ -491,40 +490,39 @@ await machineRepository.delete(item)
      * @returns {void}
      */
     async addMachine() {
-try {
-  const machineData = {
-    image: this.binaryData,
-              type: this.type,
-              location: this.location,
-              machineCode: this.machineCode,
-              department: this.department,
-              mainMotorPower: this.mainMotorPower,
-              feedMotorPower: this.feedMotorPower,
-              pumpMotorPower: this.pumpMotorPower,
-              current: this.current,
-              maximumSpeed: this.maximumSpeed,
-              minimumSpeed: this.minimumSpeed,
-              numberOfSpeeds: this.numberOfSpeeds,
-              maximumLongitudinalFeed: this.maximumLongitudinalFeed,
-              numberOfLongitudinalFeeds: this.numberOfLongitudinalFeeds,
-              maximumTransversalFeed: this.maximumTransversalFeed,
-              numberOfTransversalFeeds: this.numberOfTransversalFeeds,
-              maximumVerticalFeed: this.maximumVerticalFeed,
-              numberOfVerticalFeeds: this.numberOfVerticalFeeds,
-              minimumLongitudinalFeed: this.minimumLongitudinalFeed,
-              minimumTransversalFeed: this.minimumTransversalFeed,
-              minimumVerticalFeed: this.minimumVerticalFeed,
-  }
+      try {
+        const machineData = {
+          image: this.binaryData,
+          type: this.type,
+          location: this.location,
+          machineCode: this.machineCode,
+          department: this.department,
+          mainMotorPower: +this.mainMotorPower,
+          feedMotorPower: +this.feedMotorPower,
+          pumpMotorPower: +this.pumpMotorPower,
+          current: +this.current,
+          maximumSpeed: +this.maximumSpeed,
+          minimumSpeed: +this.minimumSpeed,
+          numberOfSpeeds: +this.numberOfSpeeds,
+          maximumLongitudinalFeed: +this.maximumLongitudinalFeed,
+          numberOfLongitudinalFeeds: +this.numberOfLongitudinalFeeds,
+          maximumTransversalFeed: +this.maximumTransversalFeed,
+          numberOfTransversalFeeds: +this.numberOfTransversalFeeds,
+          maximumVerticalFeed: +this.maximumVerticalFeed,
+          numberOfVerticalFeeds: +this.numberOfVerticalFeeds,
+          minimumLongitudinalFeed: +this.minimumLongitudinalFeed,
+          minimumTransversalFeed: +this.minimumTransversalFeed,
+          minimumVerticalFeed: +this.minimumVerticalFeed,
+        };
 
-  await machineRepository.save(machineData)
-  this.inizialite();
-            this.getMachines();
-} catch (error) {
-  console.log(error)
-}
+        await machineRepository.save(machineData);
+        this.inizialite();
+        this.$emit("machineCreated");
 
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
 };
-
 </script>

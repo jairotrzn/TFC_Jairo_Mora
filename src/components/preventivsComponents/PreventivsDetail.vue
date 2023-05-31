@@ -15,7 +15,6 @@
                     <v-text-field
                       label="Nombre del Responsable"
                       v-model="itemRecibido.namePersonInCharge"
-                      :readonly="isReadOnly"
                     >
                     </v-text-field>
                   </v-col>
@@ -23,7 +22,7 @@
                     <v-text-field
                       label="Código de acceso"
                       v-model="itemRecibido.accessCode"
-                      :readonly="isReadOnly"
+                      readonly
                     >
                     </v-text-field>
                   </v-col>
@@ -34,26 +33,16 @@
                     <v-text-field
                       label="Alumno"
                       v-model="itemRecibido.student"
-                      :readonly="isReadOnly"
                     >
-                      <template v-slot:append>
-                        <v-btn icon small @click="toggleEdit('student')">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </template>
+                      
                     </v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Password"
                       v-model="itemRecibido.password"
-                      :readonly="isReadOnly"
                     >
-                      <template v-slot:append>
-                        <v-btn icon small @click="toggleEdit('password')">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </template>
+                    
                     </v-text-field>
                   </v-col>
                 </v-row>
@@ -63,14 +52,9 @@
                     <v-text-field
                       type="date"
                       label="Fecha de inicio"
-                      v-model="itemRecibido.startDate"
-                      :readonly="isReadOnly"
+                      v-model="itemRecibido.start"
                     >
-                      <template v-slot:append>
-                        <v-btn icon small @click="toggleEdit('startDate')">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </template>
+                
                     </v-text-field>
                   </v-col>
                   <v-col cols="6">
@@ -80,11 +64,7 @@
                       :readonly="isReadOnly"
                       :class="estadoClase"
                     >
-                      <template v-slot:append>
-                        <v-btn icon small @click="toggleEdit('state')">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                      </template>
+                   
                     </v-text-field>
                   </v-col>
                 </v-row>
@@ -151,7 +131,7 @@
             >
               <template v-slot:activator>
                 <v-list-item-content class="headline">
-                  {{ tarea.nameTarea | uppercase }}
+                  {{ tarea.nameTarea }}
                 </v-list-item-content>
               </template>
               <v-list-item-subtitle class="text-center"
@@ -186,7 +166,7 @@
             </v-list-group>
           </v-list>
         </v-card>
-        <v-btn v-if="!isReadOnly" @click="confirmUpdate" :disabled="!hasChanges"
+        <v-btn  @click="confirmUpdate" 
           >Actualizar</v-btn
         >
       </v-container>
@@ -197,6 +177,7 @@
 <script>
 import eventBus from "@/config/eventBus";
 import preventivRepository from "@/repository/preventivRepository";
+import Constants from '@/assets/Constants';
 
 export default {
   data() {
@@ -245,7 +226,7 @@ export default {
      * @returns {void}
      */
     confirmUpdate() {
-      if (confirm("Are you sure you want to update?")) {
+      if (confirm(Constants.CONFIRM_UP_DATE)) {
         this.upDate(this.itemRecibido);
       }
     },
@@ -260,35 +241,20 @@ export default {
       this.isReadOnly = true;
       this.hasChanges = false;
     },
-    /**
-     * Toggles the edit mode for a property
-     * @param {String} prop - Property to toggle
-     * @returns {void}
-     */
-    toggleEdit(prop) {
-      if (this.itemRecibido.state !== "Completed") {
-        this.isReadOnly = !this.isReadOnly;
-        if (!this.isReadOnly) {
-          this.originalItem = JSON.parse(JSON.stringify(this.itemRecibido));
-        } else {
-          this.itemRecibido = JSON.parse(JSON.stringify(this.originalItem));
-        }
-        this.hasChanges = false;
-      }
-    },
+ 
     /**
      * Updates the item
      * @param {Object} itemRecibido - Item to update
      * @returns {void}
      */
-    async upDate(itemRecibido) {
+    async upDate() {
       try {
         const preventData = {
           namePersonInCharge: this.itemRecibido.namePersonInCharge,
           accessCode: this.itemRecibido.accessCode,
           student: this.itemRecibido.student,
           password: this.itemRecibido.password,
-          startDate: this.itemRecibido.startDate,
+          startDate: this.itemRecibido.start,
           state: this.itemRecibido.state,
           machineCode: this.itemRecibido.machineCode,
           tareas: this.itemRecibido.tareas,

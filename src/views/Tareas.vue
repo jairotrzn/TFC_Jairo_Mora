@@ -6,12 +6,9 @@
     <SideBar />
     <Navbar />
     <v-container>
-      <v-row>
+      <v-row> 
         <v-col cols="12" sm="9">
           <v-row>
-            <v-col cols="12" sm="12">
-              <Contact />
-            </v-col>
             <v-col cols="12" sm="12">
              <TableCrudTask/>
             </v-col>
@@ -31,7 +28,6 @@
 import TareaDetail from '@/components/tareasComponents/TareaDetail.vue'
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
-import Contact from "../components/Contact.vue";
 import TableCrudTask from "@/components/tareasComponents/TableCrudTask.vue"
 
 export default {
@@ -41,7 +37,6 @@ export default {
     TareaDetail,
     SideBar,
     Navbar,
-    Contact,
     TableCrudTask, 
   },
 };

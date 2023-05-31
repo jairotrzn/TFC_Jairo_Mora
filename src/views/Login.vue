@@ -6,9 +6,6 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
               <v-img src="@/assets/LogoProyecto.jpg" height="200"></v-img>
-              <v-toolbar color="primary" dark>
-                <v-toolbar-title>Iniciar sesión</v-toolbar-title>
-              </v-toolbar>
               <v-card-text>
                 <v-form @submit.prevent="login">
                   <v-text-field
@@ -39,7 +36,7 @@
 </template>
 
 <script>
-import { auth, signInWithEmailAndPassword,onAuthStateChanged} from '@/config/firebaseConfig';
+import { auth, signInWithEmailAndPassword, onAuthStateChanged } from '@/config/firebaseConfig';
 
 export default {
   data() {
@@ -52,12 +49,10 @@ export default {
     };
   },
   created() {
-    onAuthStateChanged(Auth, user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log(`Usuario autenticado: ${user.email}`);
-        // redirigir al usuario a la vista de home
-           this.$router.push('/home');
-
+        this.$router.push('/home');
       }
     });
   },
@@ -66,7 +61,6 @@ export default {
       signInWithEmailAndPassword(auth, this.email, this.password)
         .then((userCredential) => {
           const user = userCredential.user;
-          console.log(`Usuario autenticado: ${user.email}`);
           this.$router.push('/home');
         })
         .catch((error) => {

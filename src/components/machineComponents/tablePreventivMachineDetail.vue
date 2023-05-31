@@ -37,83 +37,91 @@
   </template>
   
   <script>
-import { db, collection, getDocs, deleteDoc, doc, query, where } from "@/config/firebaseConfig";
   import eventBus from "@/config/eventBus";
-  import PreventivsDetail from '@/components/preventivsComponents/PreventivsDetail.vue'
+  import PreventivsDetail from '@/components/preventivsComponents/PreventivsDetail.vue';
+  import preventivRepository from '@/repository/preventivRepository';
+  import Constants from '@/assets/Constants'
+
   export default {
     data() {
       return {
-        search: "",
-        machines: [],
-        selectedPreventiv: [],
-        prevents: [],
-        headers: [
+        search: "", // The search term for filtering tasks
+        machines: [], // List of machines
+        selectedPreventiv: [], // The selected preventiv object
+        prevents: [], // List of prevents
+        headers: [ // Table headers
           {
-            text: "Cod.Acceso",
+            text: Constants.CODIGO_ACCESO, // Header text for access code
             align: "start",
             filterable: false,
-            value: "accessCode",
+            value: Constants.VALUE_ACCESS_CODE,
           },
-          { text: "Cod.Máquina", value: "machineCode.machineCode" },
-          { text: "Alumno", value: "machineCode.student" },
-          { text: "Cod.Máquina", value: "machineCode.machineCode" },
-
-          { text: "Fecha Inicio", align: "center", value: "startDate" },
-          { text: "Estado", align: "center", value: "state" },
+          { text: Constants.MACHINE_CODE, value: Constants.VALUE_MACHINE_CODE }, // Header text for machine code
+          { text: Constants.ALUMNO, value: Constants.VALUE_STUDENT }, // Header text for student
+          { text: Constants.FECHA_INICIO, align: "center", value: Constants.VALUE_START_DATE }, // Header text for start date
+          { text: Constants.ESTADO, align: "center", value:Constants.VALUE_STATE }, // Header text for status
         ],
       };
     },
   
     created() {
-      eventBus.$on("item-selected", this.procesarItem);
+      eventBus.$on("item-selected", this.processItem); // Event listener for item selection
     },
   
     computed: {
-      filteredTareas() {
-        return this.tareas.filter((tareas) => {
+      /**
+       * Filter the tasks based on the search term.
+       * @returns {Array} - Filtered tasks
+       */
+      filteredTasks() {
+        return this.tasks.filter((task) => {
           const searchTerm = this.search.toLowerCase();
           return (
-            tareas.nameTarea.toLowerCase().includes(searchTerm) ||
-            tareas.category.toLowerCase().includes(searchTerm) ||
-            tareas.selectedFrencunce.toLowerCase().includes(searchTerm)
+            task.taskName.toLowerCase().includes(searchTerm) ||
+            task.category.toLowerCase().includes(searchTerm) ||
+            task.selectedFrequency.toLowerCase().includes(searchTerm)
           );
         });
       },
   
+      /**
+       * Get the machine code error message.
+       * @returns {string} - Machine code error message
+       */
       getMachineCodeError() {
         if (this.machineCode && !this.machines.includes(this.machineCode)) {
-          return "Opción no disponible";
+          return Constants.OPCION_NO_DISPONIBLE;
         } else {
-          return "";
+          return Constants.DEFAULT;
         }
       },
     },
-  components:{
-    PreventivsDetail
-  },
+  
+    components: {
+      PreventivsDetail
+    },
+  
     methods: {
+      /**
+       * Find prevents by machine code.
+       * @returns {void}
+       */
       async findByMachineCode() {
-        
         const machineCode = this.itemRecibido.machineCode;
+
         try {
-          const snapshot = await getDocs(
-            query(collection(db, "preventivos"), where("machineCode.machineCode", "==", machineCode))
-          );
-          const preventivsDb = [];
-  
-          snapshot.forEach((doc) => {
-            let preventivData = doc.data();
-            preventivData.id = doc.id;
-            preventivsDb.push(preventivData);
-          });
-  
-          this.prevents = preventivsDb;
+          this.prevents = await preventivRepository.findByMachineCode(machineCode);
         } catch (error) {
           console.log(error);
         }
       },
   
-      procesarItem(item) {
+      /**
+       * Process the selected item.
+       * @param {Object} item - The selected item object
+       * @returns {void}
+       */
+      processItem(item) {
         this.itemRecibido = item;
         this.originalItem = JSON.parse(JSON.stringify(item));
         this.isReadOnly = true;
@@ -121,6 +129,11 @@ import { db, collection, getDocs, deleteDoc, doc, query, where } from "@/config/
         this.findByMachineCode();
       },
   
+      /**
+       * Toggle the edit mode.
+       * @param {string} prop - The property to toggle
+       * @returns {void}
+       */
       toggleEdit(prop) {
         if (this.itemRecibido.state !== "Acabado") {
           this.isReadOnly = !this.isReadOnly;
@@ -133,25 +146,33 @@ import { db, collection, getDocs, deleteDoc, doc, query, where } from "@/config/
         }
       },
   
+      /**
+       * Send the selected item.
+       * @param {Object} item - The selected item object
+       * @returns {void}
+       */
       sendItem(item) {
         eventBus.$emit("item-selected", item);
       },
   
+      /**
+       * Delete a preventiv item.
+       * @param {Object} item - The preventiv item to delete
+       * @returns {void}
+       */
       async deletePreventivo(item) {
         try {
-          const docRef = doc(db, "preventivos", item.id);
-          await deleteDoc(docRef);
-          this.getPreventivos();
+          await preventivRepository.delete(item);
         } catch (error) {
           console.log(error);
         }
       },
     },
   };
-  </script>
+</script>
   
-  <style scoped>
-  .disabled {
-    opacity: 0.5;
-  }
-  </style>
+<style scoped>
+.disabled {
+  opacity: 0.5;
+}
+</style>

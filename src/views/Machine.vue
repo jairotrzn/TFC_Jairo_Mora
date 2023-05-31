@@ -29,8 +29,6 @@
   // @ is an alias to /src
   import SideBar from "@/components/SideBar.vue";
   import Navbar from "../components/Navbar.vue";
-  import Contact from "../components/Contact.vue";
-  import Doctor from "../components/DataPicker.vue";
   import MachineDetail from '@/components/machineComponents/machineDetails.vue'
   export default {
     data: () => ({}),
@@ -38,8 +36,6 @@
     components: {
       SideBar,
       Navbar,
-      Contact,
-      Doctor,
       MachineDetail
     },
   };

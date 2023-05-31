@@ -183,23 +183,16 @@
 
     <!-- Modal Crear tarea -->
     <v-dialog v-model="dialogCreatTarea">
-      <CreateTask />
+      <CreateTask @taskCreated="handlTaskCreated()" />
     </v-dialog>
   </v-card>
 </template>
 
 <script>
-import {
-  db,
-  collection,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  doc,
-  updateDoc,
-} from "@/repository/dataBase";
 import eventBus from "@/config/eventBus";
 import CreateTask from "@/components/tareasComponents/CreateTask.vue";
+import taskRepository from "@/repository/taskRepository";
+import Constants from '@/assets/Constants';
 export default {
   data() {
     return {
@@ -227,143 +220,216 @@ export default {
       priceRepuesto: "",
       provaiderRepuesto: "",
       selectedFrencunce: "",
-      frecuencias: ["Diaria", "Semanal", "Quincenal", "Mensual"],
+      frecuencias:Constants.FRECUENCIAS,
 
       selected: [],
       repuestos: [],
       headersTablaRepuestos: [
         {
-          text: "Identificador",
+          text: Constants.ID_REPUESTO,
           align: "start",
           filterable: false,
-          value: "idRepuesto",
+          value: Constants.VALUE_ID_REPUESTO,
         },
-        { text: "Nombre", value: "name" },
-        { text: "Precio €", align: "center", value: "price" },
-        { text: "Proveedor", align: "center", value: "supplier" },
+        { text: Constants.NOMBRE_REPUESTO, value: "name" },
+        { text: Constants.PRECIO, align: "center", value: Constants.VALUE_PRECIO },
+        { text: Constants.PROVEEDOR, align: "center", value: Constants.VALUE_PROVEEDOR },
       ],
       headers: [
         {
-          text: "Nombre",
+          text: Constants.NOMBRE,
           align: "start",
           filterable: false,
-          value: "nameTarea",
+          value: Constants.VALUE_NAME_TAREA,
         },
-        { text: "Categoria", value: "category" },
-        { text: "Frecuencia", align: "center", value: "selectedFrencunce" },
-        { text: "Acciones", value: "actions" },
+        { text: Constants.CATEGORIA, value: Constants.VALUE_CATEGORIA },
+        { text: Constants.FRECUENCIA, align: "center", value: Constants.VALUE_FRECUENCIA },
+        { text: Constants.ACCIONES, value: Constants.VALUE_ACTIONS },
       ],
     };
   },
   created() {
+    /**
+     * Retrieves the list of tareas from the database.
+     * @returns {void}
+     */
     this.getTareas();
-  },
-  computed: {
+},
+
+computed: {
+    /**
+     * Checks if the form is valid.
+     * @returns {boolean} - Returns true if the form is valid, otherwise false.
+     */
     isFormValid() {
-      return (
-        this.nameTarea !== "" && this.category !== "" && this.nuevoDato !== ""
-      );
-    },
-    filteredRepuestos() {
-      return this.repuestos.filter((repuesto) => {
-        const searchTerm = this.search.toLowerCase();
         return (
-          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
-          repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+            this.nameTarea !== "" && this.category !== "" && this.nuevoDato !== ""
         );
-      });
     },
-  },
-  components: {
+
+    /**
+     * Filters the repuestos based on the search term.
+     * @returns {Array} - Filtered repuestos.
+     */
+    filteredRepuestos() {
+        return this.repuestos.filter((repuesto) => {
+            const searchTerm = this.search.toLowerCase();
+            return (
+                repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+                repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+            );
+        });
+    },
+},
+
+components: {
     CreateTask,
-  },
-  methods: {
-    deleteDatos(item) {
-    const index = this.selectedTarea.datos.indexOf(item);
-    if (index !== -1) {
-      this.selectedTarea.datos.splice(index, 1);
-    }
-  },
-    confirmDelete(item) {
-      if (confirm("¿Estás seguro de que deseas eliminar?")) {
-        this.deleteTarea(item);
-        this.getAll();
-      }
-    },
-    confirmUpDate(item) {
-      if (confirm("¿Estás seguro de que deseas modificar?")) {
-        this.updateTare(item);
-        this.getAll();
-      }
-    },
+},
 
-    mostrarDatosRepuestos() {
-      const nombresSeleccionados = [];
-      this.selectedRepuesto.forEach((item) => {
-        nombresSeleccionados.push(item.nameRepuesto);
-      });
-      console.log("Nombres seleccionados:", nombresSeleccionados);
-    },
-
-    updateSelectedItems() {
-      this.selectedRepuestos = this.repuestosDB.filter(
-        (item) => item.isSelected
-      );
-    },
-    sendItem(item) {
-      eventBus.$emit("item-selected", item);
-    },
-    deleteDato(item) {
-      const index = this.datos.indexOf(item);
-      if (index !== -1) {
-        this.datos.splice(index, 1);
-      }
-    },
-    agregarDato() {
-      this.datos.push({ dato: this.nuevoDato });
-      this.nuevoDato = "";
-    },
-    async updateTare(selectedTarea) {
-      try {
-        const docRef = doc(db, "tareas", selectedTarea.id);
-        await updateDoc(docRef, {
-          nameTarea: selectedTarea.nameTarea,
-          category: selectedTarea.category,
-          selectedFrencunce: selectedTarea.selectedFrencunce,
-          provaiderRepuesto: selectedTarea.provaiderRepuesto,
-        });
-        this.getRepuestos();
-      } catch (error) {
-        console.log(error);
-      }
-    },
-
-    async deleteTarea(item) {
-      try {
-        const docRef = doc(db, "tareas", item.id);
-        await deleteDoc(docRef);
+methods: {
+    /**
+     * Handles the task creation event.
+     * @returns {void}
+     */
+    handlTaskCreated() {
+        this.dialogCreatTarea = false;
         this.getTareas();
-      } catch (error) {
-        console.log(error);
-      }
     },
 
-    async getTareas() {
-      try {
-        const snapshot = await getDocs(collection(db, "tareas"));
-        const tareasDb = [];
+    /**
+     * Deletes a dato from the selectedTarea object.
+     * @param {Object} item - The dato object to be deleted.
+     * @returns {void}
+     */
+    deleteDatos(item) {
+        const index = this.selectedTarea.datos.indexOf(item);
+        if (index !== -1) {
+            this.selectedTarea.datos.splice(index, 1);
+        }
+    },
 
-        snapshot.forEach((doc) => {
-          let tareasData = doc.data();
-          tareasData.id = doc.id;
-          tareasDb.push(tareasData);
+    /**
+     * Asks for confirmation before deleting a tarea.
+     * @param {Object} item - The tarea object to be deleted.
+     * @returns {void}
+     */
+    confirmDelete(item) {
+        if (confirm(Constants.CONFIRM_DELETE)) {
+            this.deleteTarea(item);
+            this.getAll();
+        }
+    },
+
+    /**
+     * Asks for confirmation before updating a tarea.
+     * @param {Object} item - The tarea object to be updated.
+     * @returns {void}
+     */
+    confirmUpDate(item) {
+        if (confirm(Constants.CONFIRM_UP_DATE)) {
+            this.updateTare(item);
+            this.getAll();
+        }
+    },
+
+    /**
+     * Displays the names of the selected repuestos.
+     * @returns {void}
+     */
+    mostrarDatosRepuestos() {
+        const nombresSeleccionados = [];
+        this.selectedRepuesto.forEach((item) => {
+            nombresSeleccionados.push(item.nameRepuesto);
         });
-
-        this.tareas = tareasDb;
-      } catch (error) {
-        console.log(error);
-      }
+        console.log("Nombres seleccionados:", nombresSeleccionados);
     },
-  },
+
+    /**
+     * Updates the selectedRepuesto array based on the selection state of repuestosDB items.
+     * @returns {void}
+     */
+    updateSelectedItems() {
+        this.selectedRepuestos = this.repuestosDB.filter(
+            (item) => item.isSelected
+        );
+    },
+
+    /**
+     * Sends an item through the event bus.
+     * @param {Object} item - The item to be sent.
+     * @returns {void}
+     */
+    sendItem(item) {
+        eventBus.$emit("item-selected", item);
+    },
+
+    /**
+     * Deletes a dato from the datos array.
+     * @param {Object} item - The dato object to be deleted.
+     * @returns {void}
+     */
+    deleteDato(item) {
+        const index = this.datos.indexOf(item);
+        if (index !== -1) {
+            this.datos.splice(index, 1);
+        }
+    },
+
+    /**
+     * Adds a new dato to the datos array.
+     * @returns {void}
+     */
+    agregarDato() {
+        this.datos.push({ dato: this.nuevoDato });
+        this.nuevoDato = "";
+    },
+
+    /**
+     * Updates a tarea in the database.
+     * @param {Object} selectedTarea - The tarea object to be updated.
+     * @returns {void}
+     */
+    async updateTare(selectedTarea) {
+      const tastkDate = {
+                nameTarea: selectedTarea.nameTarea,
+                category: selectedTarea.category,
+                selectedFrencunce: selectedTarea.selectedFrencunce,
+                provaiderRepuesto: selectedTarea.provaiderRepuesto,
+      }
+        try {
+      await taskRepository.upDate(tastkDate)
+            this.getRepuestos();
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    /**
+     * Deletes a tarea from the database.
+     * @param {Object} item - The tarea object to be deleted.
+     * @returns {void}
+     */
+    async deleteTarea(item) {
+
+        try {
+         await taskRepository.delete(item)
+         this.getTareas()
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    /**
+     * Retrieves the list of tareas from the database.
+     * @returns {void}
+     */
+    async getTareas() {
+        try {
+            this.tareas = await taskRepository.getAll()
+        } catch (error) {
+            console.log(error);
+        }
+    },
+},
 };
 </script>

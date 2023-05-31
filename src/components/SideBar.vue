@@ -6,7 +6,7 @@
     expand-on-hover
     mini-variant
     mini-variant-width="80"
-  >
+  >  
     <v-avatar class="d-block text-center mx-auto mt-4 mb-16" color="" size="40">
       <v-icon color="white" x-large>fab fa-artstation</v-icon>
     </v-avatar>

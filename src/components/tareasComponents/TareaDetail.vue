@@ -26,22 +26,30 @@
 </template>
   
   <script>
-  import eventBus from '@/config/eventBus';
+import eventBus from '@/config/eventBus';
 
-  export default {
-    data() {
-      return {
-        itemRecibido: null,
-      };
+export default {
+  data() {
+    return {
+      itemRecibido: null,
+    };
+  },
+  created() {
+    /**
+     * Subscribes to the 'item-selected' event on the eventBus and handles the event by calling the 'procesarItem' method.
+     * @returns {void}
+     */
+    eventBus.$on('item-selected', this.procesarItem);
+  },
+  methods: {
+    /**
+     * Processes the selected item received from the event.
+     * @param {Object} item - The selected item.
+     * @returns {void}
+     */
+    procesarItem(item) {
+      this.itemRecibido = item;
     },
-    created() {
-      eventBus.$on('item-selected', this.procesarItem);
-    },
-    methods: {
-      procesarItem(item) {
-        this.itemRecibido = item;
-        // Puedes realizar aquí cualquier lógica necesaria con el item recibido
-      },
-    },
-  };
-  </script>
+  },
+};
+</script>

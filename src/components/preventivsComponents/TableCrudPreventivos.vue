@@ -61,6 +61,7 @@
 import PreventivsDetail from "@/components/preventivsComponents/PreventivsDetail.vue";
 import CreatePreventiv from "./CreatePreventiv.vue";
 import preventivRepository from "@/repository/preventivRepository";
+import Constants from "@/assets/Constants";
 
 export default {
   components: {
@@ -78,22 +79,21 @@ export default {
       prevents: [],
       headers: [
         {
-          text: "Access Code",
+          text: Constants.CODIGO_ACCESO,
           align: "start",
           filterable: false,
-          value: "accessCode",
+          value: Constants.VALUE_ACCESS_CODE,
         },
-        { text: "Machine Code", value: "machineCode.machineCode" },
-        { text: "Start Date", align: "center", value: "startDate" },
-        { text: "Status", align: "center", value: "state" },
-        { text: "Actions", align: "center", value: "actions" },
+        { text: Constants.CODIGO_MAQUINA, value: Constants.VALUE_MACHINE_CODE },
+        { text: Constants.FECHA_INICIO, align: "center", value: Constants.VALUE_START_DATE },
+        { text: Constants.ESTADO, align: "center", value: Constants.VALUE_STATE },
+        { text: Constants.ACCIONES, align: "center", value: Constants.VALUE_ACTIONS },
       ],
     };
   },
 
   created() {
     this.getPreventivos();
-    this.getTareas();
   },
   computed: {
     /**
@@ -116,7 +116,7 @@ export default {
      */
     getMachineCodeError() {
       if (this.machineCode && !this.machines.includes(this.machineCode)) {
-        return "Option not available";
+        return Constants.OPCION_NO_DISPONIBLE;
       } else {
         return "";
       }
@@ -141,7 +141,7 @@ export default {
      * @param {Object} item - The preventive item to be deleted.
      */
     confirmDelete(item) {
-      if (confirm("Are you sure you want to delete?")) {
+      if (confirm(Constants.CONFIRM_DELETE)) {
         this.deletePreventivo(item);
         this.getPreventivos();
       }

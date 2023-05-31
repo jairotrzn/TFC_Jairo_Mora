@@ -1,88 +1,87 @@
 <template>
   <v-card>
-  <v-container>
-    <v-form ref="form" @submit.prevent="addPreventivo">
-      <p><b>CREAR NUEVO PREVENTIVO</b></p>
+    <v-container>
+      <v-form ref="form" @submit.prevent="addPreventivo">
+        <p><b>CREAR NUEVO PREVENTIVO</b></p>
 
-      <v-row>
-        <v-col cols="12" md="4">
-          <v-text-field
-            type="text"
-            label="Agregar nombre de responsable"
-            v-model="namePersonInCharge"
-            :rules="[(v) => !!v || 'Este campo es obligatorio']"
-            required
-            dense
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-combobox
-            v-model="machineCode"
-            :items="machines"
-            label="Código Máquina"
-            item-text="machineCode"
-            required
-            dense
-            filterable
-            :error-messages="getMachineCodeError"
-          ></v-combobox>
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-text-field
-            type="date"
-            label="Fecha de inicio"
-            v-model="startDate"
-            required
-            dense
-          ></v-text-field>
-        </v-col>
-      </v-row>
-      <v-data-table
-        v-model="selectedPreventiv"
-        :headers="headersTablaTareas"
-        :items="filteredTareas"
-        :single-select="singleSelectTarea"
-        item-key="nameTarea"
-        show-select
-        class="elevation-1"
-      >
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-toolbar-title>Tareas</v-toolbar-title>
-            <v-spacer></v-spacer>
+        <v-row>
+          <v-col cols="12" md="4">
             <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Buscar"
-              single-line
-              hide-details
+              type="text"
+              label="Agregar nombre de responsable"
+              v-model="namePersonInCharge"
+              :rules="[(v) => !!v || 'Este campo es obligatorio']"
+              required
+              dense
             ></v-text-field>
-          </v-toolbar>
-        </template>
-      </v-data-table>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-combobox
+              v-model="machineCode"
+              :items="machines"
+              label="Código Máquina"
+              item-text="machineCode"
+              required
+              dense
+              filterable
+              :error-messages="getMachineCodeError"
+            ></v-combobox>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-text-field
+              type="date"
+              label="Fecha de inicio"
+              v-model="startDate"
+              required
+              dense
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-data-table
+          v-model="selectedPreventiv"
+          :headers="headersTablaTareas"
+          :items="filteredTareas"
+          :single-select="singleSelectTarea"
+          item-key="nameTarea"
+          show-select
+          class="elevation-1"
+        >
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title>Tareas</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-model="search"
+                append-icon="mdi-magnify"
+                label="Buscar"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-toolbar>
+          </template>
+        </v-data-table>
 
-      <br />
-      <v-btn
-        type="submit"
-        color="primary"
-        class="mr-4"
-        @click.stop="validateForm"
-        :disabled="isFormIncomplete"
-        >Crear Nuevo Preventivo</v-btn
-      >
-      <br />
-    </v-form>
-  </v-container>
-</v-card>
+        <br />
+        <v-btn
+          type="submit"
+          color="primary"
+          class="mr-4"
+          @click.stop="validateForm"
+          :disabled="isFormIncomplete"
+          >Crear Nuevo Preventivo</v-btn
+        >
+        <br />
+      </v-form>
+    </v-container>
+  </v-card>
 </template>
 
 <script>
-import { addDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "@/main";
 import { v4 as uuidv4 } from "uuid";
-import machineRepository from '@/repository/machineRepository';
+import machineRepository from "@/repository/machineRepository";
 import preventivRepository from "@/repository/preventivRepository";
 import taskRepository from "@/repository/taskRepository";
+import Constants from '@/assets/Constants';
 
 export default {
   data() {
@@ -98,7 +97,8 @@ export default {
       namePersonInCharge: "", // Name of the responsible person
       selectedPreventiv: [], // Selected preventive tasks
       search: "", // Search term for task filtering
-      headersTablaTareas: [ // Headers for the task data table
+      headersTablaTareas: [
+        // Headers for the task data table
         { text: "Name", value: "nameTarea" },
         {
           text: "Category",
@@ -144,7 +144,7 @@ export default {
        * @returns {String} - Error message
        */
       return this.machineCode && !this.machines.includes(this.machineCode)
-        ? "Option not available"
+        ? Constants.OPCION_NO_DISPONIBLE
         : "";
     },
     isFormIncomplete() {
@@ -170,7 +170,7 @@ export default {
       try {
         this.tareas = await taskRepository.getAll();
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
     },
 
@@ -190,7 +190,7 @@ export default {
       try {
         this.machines = await machineRepository.getAll();
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
     },
 
@@ -203,20 +203,47 @@ export default {
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
         tareas: this.selectedPreventiv,
-        startDate: this.startDate,
+        start: this.startDate,
+        end: this.calculateNextDay(this.startDate),
         accessCode: this.generateUniqueId(),
-        state: "Pending",
-        password: "",
+        state:Constants.PENDIENTE,
+        password: Constants.DEFAULT,
+        student:Constants.DEFAULT,
+        color:"#ecab0f"
       };
 
       try {
         await preventivRepository.save(preventivData);
-        this.$emit('preventivCreated');
+        this.$emit("preventivCreated");
       } catch (error) {
         console.log(error);
       }
       this.getPreventivos();
       this.initializeForm();
+    },
+
+    /**
+     * Calculates the next day of a given date.
+     * @param {string} date - The date in 'yyyy-mm-dd' format.
+     * @returns {string} The next day in 'yyyy-mm-dd' format.
+     */
+    calculateNextDay(date) {
+      const [year, month, day] = date.split("-");
+      const currentDate = new Date(year, month - 1, day); // Months are zero-based in JavaScript
+
+      // Calculate the next day
+      currentDate.setDate(currentDate.getDate() + 1);
+
+      const nextYear = currentDate.getFullYear();
+      const nextMonth = (currentDate.getMonth() + 1)
+        .toString()
+        .padStart(2, "0"); // Add leading zero if necessary
+      const nextDay = currentDate.getDate().toString().padStart(2, "0"); // Add leading zero if necessary
+
+      // Format the next day as 'yyyy-mm-dd'
+      const nextDayFormatted = `${nextYear}-${nextMonth}-${nextDay}`;
+
+      return nextDayFormatted;
     },
 
     /**
@@ -233,18 +260,17 @@ export default {
      * @returns {void}
      */
     initializeForm() {
-      this.namePersonInCharge = "";
-      this.machineCode = "";
-      this.startDate = "";
+      this.namePersonInCharge = Constants.DEFAULT;
+      this.machineCode = Constants.DEFAULT;
+      this.startDate = Constants.DEFAULT;
       this.selectedPreventiv = [];
     },
   },
 };
 </script>
 
-
 <style scoped>
 .disabled {
-opacity: 0.5;
+  opacity: 0.5;
 }
 </style>

@@ -6,8 +6,8 @@
     <SideBar />
     <Navbar />
     <v-container>
-      <Contact />
-      <br />
+      <v-col cols="12" sm="12">     
+            </v-col>
       <TableCrudPreventivos />
     </v-container>
   </v-app>
@@ -17,7 +17,6 @@
 // @ is an alias to /src
 import SideBar from "@/components/SideBar.vue";
 import Navbar from "../components/Navbar.vue";
-import Contact from "../components/Contact.vue";
 import TableCrudPreventivos from "@/components/preventivsComponents/TableCrudPreventivos.vue";
 
 export default {
@@ -27,7 +26,6 @@ export default {
     
     SideBar,
     Navbar,
-    Contact,
     TableCrudPreventivos,
   },
 };

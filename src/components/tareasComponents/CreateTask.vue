@@ -125,7 +125,8 @@
 </template>
 
 <script>
-import { db, collection, getDocs, addDoc } from "@/repository/dataBase";
+import repuestosRepository from '@/repository/repuestosRepository';
+import taskRepository from '@/repository/taskRepository';
 
 export default {
   data() {
@@ -155,13 +156,28 @@ export default {
       ],
     };
   },
+ 
   created() {
     this.getRepuestos();
   },
+
   computed: {
+    /**
+     * Checks if the form is valid.
+     * @returns {boolean} - Returns true if the form is valid, otherwise false.
+     */
     isFormValid() {
-      return this.nameTarea !== "" && this.category !== "" && this.nuevoDato !== "";
+      return (
+        this.nameTarea !== "" &&
+        this.category !== "" &&
+        this.nuevoDato.length === 0
+      );
     },
+
+    /**
+     * Filters the repuestos based on the search term.
+     * @returns {Array} - Filtered repuestos
+     */
     filteredRepuestos() {
       return this.repuestosDB.filter((repuesto) => {
         const searchTerm = this.search.toLowerCase();
@@ -172,46 +188,72 @@ export default {
       });
     },
   },
+
   methods: {
+    /**
+     * Updates the selectedRepuesto array based on the selection state of repuestosDB items.
+     * @returns {void}
+     */
     updateSelectedItems() {
       this.selectedRepuestos = this.repuestosDB.filter((item) => item.isSelected);
     },
 
+    /**
+     * Deletes a dato from the datos array.
+     * @param {Object} item - The dato object to be deleted.
+     * @returns {void}
+     */
     deleteDato(item) {
       const index = this.datos.indexOf(item);
       if (index !== -1) {
         this.datos.splice(index, 1);
       }
     },
+
+    /**
+     * Adds a new dato to the datos array.
+     * @returns {void}
+     */
     agregarDato() {
       this.datos.push({ dato: this.nuevoDato });
       this.nuevoDato = "";
     },
-    async getRepuestos() {
-      try {
-        const snapshot = await getDocs(collection(db, "repuestos"));
-        const repuestos = [];
 
-        snapshot.forEach((doc) => {
-          let repuestosData = doc.data();
-          repuestosData.id = doc.id;
-          repuestos.push(repuestosData);
-        });
-        this.repuestosDB = repuestos;
+    /**
+     * Retrieves the list of repuestos from the database.
+     * @returns {void}
+     */
+    async getRepuestos() {
+
+      try {
+        this.repuestosDB = await repuestosRepository.getAll()
       } catch (error) {
-        console.log(error);
+        console.log(error)
       }
     },
+
+    /**
+     * Adds a new tarea to the database.
+     * @returns {void}
+     */
     async addTarea() {
-      try {
-        await addDoc(collection(db, "tareas"), {
+
+      const tastkDate = {
           nameTarea: this.nameTarea,
           category: this.category,
           selectedFrencunce: this.selectedFrencunce,
           datos: this.datos,
           repuestos: this.selectedRepuesto,
           state: "Pendiente",
-        });
+          start: "",
+          end: "",
+          lastDate: "",
+
+      } 
+      try {
+      await taskRepository.save(tastkDate)
+
+        this.$emit("taskCreated");
       } catch (error) {
         console.log(error);
       }

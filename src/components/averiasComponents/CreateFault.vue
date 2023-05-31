@@ -66,12 +66,9 @@
 /**
  * Componente para crear una nueva tarea correctiva.
  */
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/main";
 import { v4 as uuidv4 } from "uuid";
-
 import faultRepository from "@/repository/faultRepository";
-
+import Constats from '@/assets/Constants'
 export default {
   /**
    * Datos del componente.
@@ -83,7 +80,7 @@ export default {
       machineCode: "", // Código de máquina para la tarea
       machines: [], // Máquinas disponibles
       namePersonInCharge: "", // Nombre de la persona responsable
-      state: "Pendiente", // Estado de la tarea
+      state: Constants.PENDIENTE, // Estado de la tarea
       password: "", // Contraseña para la tarea
     };
   },
@@ -105,7 +102,7 @@ export default {
      */
     getMachineCodeError() {
       return this.machineCode && !this.machines.includes(this.machineCode)
-        ? "Opción no disponible"
+        ? Constants.OPCION_NO_DISPONIBLE
         : "";
     },
     /**
@@ -133,18 +130,16 @@ export default {
       this.$refs.form.validate();
     },
 
-    /**
-     * Obtener las máquinas disponibles.
+     /**
+     * Retrieve the list of machines from the database.
+     * @returns {void}
      */
-    async getMachines() {
+     async getMachines() {
       try {
-        const snapshot = await getDocs(collection(db, "machines"));
-        this.machines = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-      } catch (error) {
+        this.machines = await machineRepository.getAll()
+            } catch (error) {
         console.log(error);
+
       }
     },
 
@@ -165,15 +160,19 @@ export default {
       const faultData = {
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
-        startDate: this.startDate,
+        start: this.startDate,
+        end:this.startDate,
         description: this.descriptionDefault,
         accessCode: this.generateUniqueId(),
-        state: this.state,
+        state:Constants.PENDIENTE,
+        student:Constants.DEFAULT,
         password: this.password,
+        color:"ff0000",
+        solution:Constants.DEFAULT,
       };
       try {
         await faultRepository.save(faultData);
-        this.$emit("averiaCreated");
+        this.$emit(Constants.AVERIA_CREATE);
       } catch (error) {
         console.log(error);
       }
@@ -185,10 +184,10 @@ export default {
      * Inicializar el formulario.
      */
     initializeForm() {
-      this.namePersonInCharge = "";
-      this.machineCode = "";
-      this.startDate = "";
-      this.descriptionDefault = "";
+      this.namePersonInCharge = Constants.DEFAULT;
+      this.machineCode = Constants.DEFAULT;
+      this.startDate = Constants.DEFAULT;
+      this.descriptionDefault = Constants.DEFAULT;
     },
   },
 };
