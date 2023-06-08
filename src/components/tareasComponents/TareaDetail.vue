@@ -8,10 +8,10 @@
       <v-card-text>
         <p><b>Frecuencia:</b> {{ itemRecibido.selectedFrencunce }}</p>
         <p><b>Categoria:</b> {{ itemRecibido.category }}</p>
-        <h3>Datos:</h3>
+        <h3>Procedimiento:</h3>
         <ul>
           <li v-for="(dato, index) in itemRecibido.datos" :key="index">
-            {{ dato.dato }}
+            {{dato }}
           </li>
         </ul>
         <h3>Repuestos</h3>

@@ -49,7 +49,8 @@ export default {
           machineData.id = doc.id;
           machines.push(machineData);
         });
-  
+        console.log({machines})
+
         return machines;
       } catch (error) {
         console.log(error);
@@ -65,7 +66,7 @@ export default {
     async save(machineData) {
       try {
         const querySnapshot = await getDocs(
-          query(collection(db, COLLECTION_NAME), where('machineCode', '==', machineData.machineCode))
+          query(collection(db, COLLECTION_NAME), where('name', '==', machineData.name))
         );
         if (querySnapshot.size === 0) {
           await addDoc(collection(db, COLLECTION_NAME), machineData);
@@ -78,4 +79,6 @@ export default {
         console.log(error);
       }
     },
+
   };
+

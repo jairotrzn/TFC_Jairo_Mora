@@ -21,7 +21,7 @@
 
     <v-spacer></v-spacer>
 
-    <v-icon color="black" @click="showLogoutDialog">mdi-logout</v-icon>
+    <v-icon color="black" @click="confirmLogOut()">mdi-logout</v-icon>
 
     <v-dialog v-model="logoutDialogVisible" max-width="400">
       <v-card>
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { auth, signOut } from '@/config/firebaseConfig'
 export default {
   data() {
     return {
@@ -85,10 +86,15 @@ export default {
     cancelLogout() {
       this.logoutDialogVisible = false;
     },
+    confirmLogOut(){
+      if(confirm("Deseas cerrar sesión")){
+        this.performLogout()
+      }
+    },
     async performLogout() {
       console.log("Voy a cerrar sesión");
       try {
-        const auth = getAuth();
+        
         await signOut(auth);
         console.log("Sesión cerrada");
         this.logoutDialogVisible = false;

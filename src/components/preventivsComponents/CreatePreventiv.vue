@@ -90,7 +90,7 @@ export default {
      * @returns {Object}
      */
     return {
-      startDate: "", // Start date for the preventive
+      startDate:"", // Start date for the preventive
       machineCode: "", // Selected machine code
       machines: [], // List of machines
       tareas: [], // List of tasks
@@ -99,7 +99,7 @@ export default {
       search: "", // Search term for task filtering
       headersTablaTareas: [
         // Headers for the task data table
-        { text: "Name", value: "nameTarea" },
+        { text: "Name", value: "name" },
         {
           text: "Category",
           align: "start",
@@ -133,7 +133,7 @@ export default {
       const searchTerm = this.search.toLowerCase();
       return this.tareas.filter(
         (tarea) =>
-          tarea.nameTarea.toLowerCase().includes(searchTerm) ||
+          tarea.name.toLowerCase().includes(searchTerm) ||
           tarea.category.toLowerCase().includes(searchTerm) ||
           tarea.selectedFrencunce.toLowerCase().includes(searchTerm)
       );
@@ -169,6 +169,7 @@ export default {
     async getTareas() {
       try {
         this.tareas = await taskRepository.getAll();
+      
       } catch (error) {
         console.error(error);
       }
@@ -200,16 +201,17 @@ export default {
      */
     async addPreventivo() {
       const preventivData = {
+        name: (this.machineCode.machineCode + " " + this.machineCode.type),
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
         tareas: this.selectedPreventiv,
-        start: this.startDate,
-        end: this.calculateNextDay(this.startDate),
+        start: new Date(this.formatDate(this.startDate)),
+        end: new Date(this.formatDate(this.startDate)),
         accessCode: this.generateUniqueId(),
-        state:Constants.PENDIENTE,
+        state: Constants.PENDIENTE,
         password: Constants.DEFAULT,
-        student:Constants.DEFAULT,
-        color:"#ecab0f"
+        student: Constants.DEFAULT,
+        color: "#ecab0f"
       };
 
       try {
@@ -220,30 +222,6 @@ export default {
       }
       this.getPreventivos();
       this.initializeForm();
-    },
-
-    /**
-     * Calculates the next day of a given date.
-     * @param {string} date - The date in 'yyyy-mm-dd' format.
-     * @returns {string} The next day in 'yyyy-mm-dd' format.
-     */
-    calculateNextDay(date) {
-      const [year, month, day] = date.split("-");
-      const currentDate = new Date(year, month - 1, day); // Months are zero-based in JavaScript
-
-      // Calculate the next day
-      currentDate.setDate(currentDate.getDate() + 1);
-
-      const nextYear = currentDate.getFullYear();
-      const nextMonth = (currentDate.getMonth() + 1)
-        .toString()
-        .padStart(2, "0"); // Add leading zero if necessary
-      const nextDay = currentDate.getDate().toString().padStart(2, "0"); // Add leading zero if necessary
-
-      // Format the next day as 'yyyy-mm-dd'
-      const nextDayFormatted = `${nextYear}-${nextMonth}-${nextDay}`;
-
-      return nextDayFormatted;
     },
 
     /**
@@ -262,9 +240,13 @@ export default {
     initializeForm() {
       this.namePersonInCharge = Constants.DEFAULT;
       this.machineCode = Constants.DEFAULT;
-      this.startDate = Constants.DEFAULT;
+      this.startDate = new Date();
       this.selectedPreventiv = [];
     },
+    formatDate(fecha) {
+      const fechaCompleta = fecha + "T00:00:00.000Z";
+      return fechaCompleta;
+    }
   },
 };
 </script>

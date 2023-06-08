@@ -31,7 +31,7 @@
             <v-text-field
               type="date"
               label="Fecha de inicio"
-              v-model="itemRecibido.start"
+              v-model="formattedDateTextField"
               required
               dense
             ></v-text-field>
@@ -158,6 +158,48 @@ export default {
         ? Constants.OPCION_NO_DISPONIBLE
         : Constants.DEFAULT;
     },
+ /**
+ * The formattedDateTextField property getter and setter.
+ *
+ * @type {Object}
+ * @property {string} get - The getter function for the formattedDateTextField property.
+ * @property {Function} set - The setter function for the formattedDateTextField property.
+ */
+formattedDateTextField: {
+  /**
+   * Getter function for the formattedDateTextField property.
+   *
+   * @returns {string} The formatted date string in 'yyyy-mm-dd' format, or an empty string if not available.
+   */
+  get() {
+    if (this.itemRecibido && this.itemRecibido.start) {
+      const dateObj = new Date(this.itemRecibido.start.seconds * 1000);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    return "";
+  },
+  /**
+   * Setter function for the formattedDateTextField property.
+   *
+   * @param {string} value - The date string in 'yyyy-mm-dd' format to be set.
+   */
+  set(value) {
+    if (this.itemRecibido) {
+      const parts = value.split("-");
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const day = parseInt(parts[2]);
+      const date = new Date(year, month, day);
+      this.itemRecibido.start = {
+        seconds: Math.floor(date.getTime() / 1000), // Convert from milliseconds to seconds
+      };
+    }
+  },
+},
+
   },
 
   /**
@@ -180,7 +222,7 @@ export default {
       const faultData = {
         namePersonInCharge: this.itemRecibido.namePersonInCharge,
         machineCode: this.itemRecibido.machineCode,
-        start: this.itemRecibido.start,
+        start: new Date(this.formattedDateTextField),
         description: this.itemRecibido.description,
         accessCode: this.itemRecibido.accessCode,
         state: this.itemRecibido.state,

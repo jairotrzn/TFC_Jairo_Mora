@@ -5,7 +5,7 @@
         <v-row justify="center">
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
-              <v-img src="@/assets/LogoProyecto.jpg" height="200"></v-img>
+              <v-img src="@/assets/LogoProyecto.jpg" height="250"></v-img>
               <v-card-text>
                 <v-form @submit.prevent="login">
                   <v-text-field
@@ -50,19 +50,21 @@ export default {
   },
   created() {
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log(`Usuario autenticado: ${user.email}`);
+    if (user) {
+      if (this.$route.path !== '/home') {
         this.$router.push('/home');
       }
-    });
+    }
+  });
   },
   methods: {
     login() {
       signInWithEmailAndPassword(auth, this.email, this.password)
         .then((userCredential) => {
           const user = userCredential.user;
-          this.$router.push('/home');
-        })
+          if (this.$route.path !== '/home') {
+        this.$router.push('/home');
+      }        })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;

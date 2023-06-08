@@ -3,12 +3,7 @@
     <v-col cols="9">
       <v-sheet height="64">
         <v-toolbar flat color="white">
-          <v-btn color="primary" dark class="mr-4" @click="dialog = true">
-            Agregar
-          </v-btn>
-          <v-btn outlined class="mr-4" @click="setToday">
-            Hoy
-          </v-btn>
+          <v-btn outlined class="mr-4" @click="setToday"> Hoy </v-btn>
           <v-btn fab text small @click="prev">
             <v-icon small>mdi-chevron-left</v-icon>
           </v-btn>
@@ -43,23 +38,69 @@
       </v-sheet>
       <v-sheet height="600">
         <v-calendar
-  ref="calendar"
-  v-model="focus"
-  color="primary"
-  :events="events"
-  :event-color="getEventColor"
-  :event-margin-bottom="3"
-  :now="today"
-  :type="type"
-  @click:event="showEvent"
-  @click:more="viewDay"
-  @click:date="viewDay"
-  @change="updateRange"
-  :weekdays="[1, 2, 3, 4, 5, 6, 0]"
-  locale="es"
-  :short-weekdays="false"
->
-</v-calendar>
+          ref="calendar"
+          v-model="focus"
+          color="primary"
+          :events="events"
+          :event-color="getEventColor"
+          :event-margin-bottom="3"
+          :now="today"
+          :type="type"
+          @click:event="showEvent"
+          @click:more="viewDay"
+          @click:date="viewDay"
+          :weekdays="[1, 2, 3, 4, 5, 6, 0]"
+          locale="es"
+          :short-weekdays="false"
+        ></v-calendar>
+        <v-menu
+          v-model="selectedOpen"
+          :close-on-content-click="false"
+          :activator="selectedElement"
+          offset-x
+        >
+          <v-card color="grey lighten-4" min-width="350px" flat>
+            <v-toolbar :color="selectedEvent.color" dark>
+              <v-toolbar-title v-if="selectedEvent.color === '#ff4040'">
+                <span v-html="selectedEvent.name"></span>
+              </v-toolbar-title>
+              <v-toolbar-title v-else-if="selectedEvent.color === '#ecab0f'">
+                <span v-html="selectedEvent.name"></span>
+              </v-toolbar-title>
+              <v-toolbar-title v-else-if="selectedEvent.color === '#90ffbb'">
+                <span v-html="selectedEvent.name"></span>
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+            </v-toolbar>
+            <v-card-text>
+              <p><b>Responsable</b></p>
+              <span v-html="selectedEvent.namePersonInCharge"></span>
+              <template v-if="selectedEvent.color === '#ff4040'">
+                <p><b>Descripcion de la averia</b></p>
+                <span v-html="selectedEvent.description"></span>
+              </template>
+              <template v-else-if="selectedEvent.color === '#ecab0f'">
+                <p><b>Lista de tareas</b></p>
+                <span v-html="selectedEvent.tareas.name"></span>
+                >
+              </template>
+              <template v-else-if="selectedEvent.color === '#90ffbb'">
+                <p><b>Información verde</b></p>
+                <span
+                  >Esta es información específica para eventos con color
+                  verde.</span
+                >
+              </template>
+              <template v-else>
+                <p><b>Otro color</b></p>
+                <span
+                  >Esta es información para eventos con colores distintos a
+                  rojo, azul y verde.</span
+                >
+              </template>
+            </v-card-text>
+          </v-card>
+        </v-menu>
       </v-sheet>
     </v-col>
     <v-col cols="3">
@@ -73,29 +114,40 @@
       </v-card>
 
       <v-alert
-        v-if="getPastDueEventsCount > 0"
-        type="error"
-        class="mt-4 blinking"
-      >
-        Tienes {{ getPastDueEventsCount }} evento(s) atrasado(s).
-      </v-alert>
+          v-if="getPastDueEventsCount > 0"
+          type="error"
+          class="mt-4 blinking"
+        >
+          Tienes {{ getPastDueEventsCount }} evento(s) atrasado(s).
+        </v-alert>
+
+        <v-alert
+          v-else
+          type="success"
+          class="mt-4"
+          color="green"
+        >
+          Enhorabuena, tienes todas las tareas al día.
+          <v-icon>mdi-thumb-up</v-icon>
+        </v-alert>
     </v-col>
   </v-row>
 </template>
 
 <script>
-import { db, collection, getDocs, deleteDoc, doc, updateDoc } from "@/config/firebaseConfig";
+import preventivRepository from "@/repository/preventivRepository";
+import faultRepository from "@/repository/faultRepository";
 
 export default {
   data: () => ({
     today: new Date().toISOString().substr(0, 10),
     focus: new Date().toISOString().substr(0, 10),
-    type: 'month',
+    type: "month",
     typeToLabel: {
-      month: 'Mes',
-      week: 'Week',
-      day: 'Day',
-      '4day': '4 Days',
+      month: "Mes",
+      week: "Week",
+      day: "Day",
+      "4day": "4 Days",
     },
     start: null,
     end: null,
@@ -105,10 +157,11 @@ export default {
     events: [],
     name: null,
     details: null,
-    color: '#1976D2',
-    dialog: false,
-    currentlyEditing: null
+    color: "#1976D2",
+    currentlyEditing: null,
+    showCard: false,
   }),
+
   computed: {
     getPastDueEventsCount() {
       const today = new Date();
@@ -119,191 +172,151 @@ export default {
     },
     getEventCountThisWeek() {
       const today = new Date();
-      const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
-      const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - today.getDay()));
+      const startOfWeek = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay()
+      );
+      const endOfWeek = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + (6 - today.getDay())
+      );
 
       return this.events.filter((event) => {
         const eventEnd = new Date(event.end);
         return eventEnd >= startOfWeek && eventEnd <= endOfWeek;
       }).length;
     },
-    filteredEvents() {
-  const today = new Date().toISOString().substr(0, 10);
-  return this.events.filter((event) => {
-    return event.end >= today && event.startDate !== undefined && event.startDate !== ""; // Filtrar por fecha de finalización y existencia de fecha de inicio
-  });
-},
     title() {
       const { start, end } = this;
       if (!start || !end) {
-        return '';
+        return "";
       }
 
       const startMonth = this.monthFormatter(start);
       const endMonth = this.monthFormatter(end);
-      const suffixMonth = startMonth === endMonth ? '' : endMonth;
+      const suffixMonth = startMonth === endMonth ? "" : endMonth;
 
       const startYear = start.year;
       const endYear = end.year;
-      const suffixYear = startYear === endYear ? '' : endYear;
+      const suffixYear = startYear === endYear ? "" : endYear;
 
       const startDay = start.day + this.nth(start.day);
       const endDay = end.day + this.nth(end.day);
 
       switch (this.type) {
-        case 'month':
+        case "month":
           return `${startMonth} ${startYear}`;
-        case 'week':
-        case '4day':
+        case "week":
+        case "4day":
           return `${startMonth} ${startDay} ${startYear} - ${suffixMonth} ${endDay} ${suffixYear}`;
-        case 'day':
+        case "day":
           return `${startMonth} ${startDay} ${startYear}`;
       }
-      return '';
+      return "";
     },
     monthFormatter() {
       return this.$refs.calendar.getFormatter({
-        timeZone: 'UTC',
-        month: 'long',
+        timeZone: "UTC",
+        month: "long",
       });
     },
   },
+
   mounted() {
     this.$refs.calendar.checkChange();
   },
+
   created() {
     this.getEvents();
   },
+
   methods: {
-    async updateEvent(ev) {
-      try {
-        const docRef = doc(db, 'eventos', ev.id);
-        await updateDoc(docRef, {
-          name: ev.name,
-          details: ev.details
-        });
-
-        this.selectedOpen = false;
-        this.currentlyEditing = null;
-
-
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    editEvent(id) {
-      this.currentlyEditing = id;
-    },
-    async deleteEvent(ev) {
-      try {
-        const docRef = doc(db, 'eventos', ev.id);
-        await deleteDoc(docRef);
-
-        this.selectedOpen = false;
-        this.getEvents();
-
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    async addEvent() {
-      try {
-
-        if (this.name && this.start && this.end) {
-          await addDoc(collection(db, "eventos"), {
-            name: this.name,
-            details: this.details,
-            startDate: this.start,
-            endDate: this.end,
-            color: this.color
-          });
-
-          this.getEvents();
-
-          this.name = null;
-          this.details = null;
-          this.start = null;
-          this.end = null;
-          this.color = '#1976D2';
-
-        } else {
-          console.log('Campos obligatorios');
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    },
     async getEvents() {
       try {
-        const snapshot = await getDocs(collection(db, "preventivos"));
-        const events = [];
-
-        snapshot.forEach(doc => {
-          let eventoData = doc.data();
-          eventoData.id = doc.id;
-          events.push(eventoData);
-        });
-
-        this.events = events;
-
+        const preventivs = await preventivRepository.getAll();
+        const faults = await faultRepository.getAll();
+       // const futureTask = await preventivRepository.getPrevntivTask();
+        this.events = [ ...faults,...preventivs];
+        console.log(...faults,...preventivs);
+        this.transformEventsDateFormat(); // Agregar llamada a la función de transformación
       } catch (error) {
-
         console.log(error);
       }
     },
-    viewDay({
-      date
-    }) {
+
+    viewDay({ date }) {
       this.focus = date;
-      this.type = 'day';
+      this.type = "day";
     },
+
     getEventColor(event) {
       return event.color;
     },
+
     setToday() {
       this.focus = new Date().toISOString().substr(0, 10);
     },
+
     prev() {
       this.$refs.calendar.prev();
     },
+
     next() {
       this.$refs.calendar.next();
     },
-    showEvent({
-      nativeEvent,
-      event
-    }) {
+
+    showEvent({ nativeEvent, event }) {
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
-        setTimeout(() => this.selectedOpen = true, 10);
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => (this.selectedOpen = true))
+        );
       };
 
       if (this.selectedOpen) {
         this.selectedOpen = false;
-        setTimeout(open, 10);
+        requestAnimationFrame(() => requestAnimationFrame(() => open()));
       } else {
         open();
       }
 
       nativeEvent.stopPropagation();
+    },    
+    formatDateToTable(timestamp) {
+      const date = new Date(timestamp.seconds * 1000);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     },
-    updateRange({
-      start,
-      end
-    }) {
 
-      this.start = start;
-      this.end = end;
-    },
     nth(d) {
-      return d > 3 && d < 21 ?
-        'th' :
-        ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][d % 10];
+      return d > 3 && d < 21
+        ? "th"
+        : ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][d % 10];
+    },
+
+    formatDateToYYYYMMDD(timestamp) {
+      const date = new Date(timestamp.seconds * 1000);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+
+    transformEventsDateFormat() {
+      this.events.forEach((event) => {
+        event.start = this.formatDateToYYYYMMDD(event.start);
+        event.end = this.formatDateToYYYYMMDD(event.end);
+      });
     },
   },
-}
+};
 </script>
+
 <style>
 @keyframes blink {
   0% {

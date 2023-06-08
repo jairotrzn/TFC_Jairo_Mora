@@ -68,7 +68,8 @@
  */
 import { v4 as uuidv4 } from "uuid";
 import faultRepository from "@/repository/faultRepository";
-import Constats from '@/assets/Constants'
+import machineRepository from '@/repository/machineRepository'
+import Constants from '@/assets/Constants'
 export default {
   /**
    * Datos del componente.
@@ -123,6 +124,7 @@ export default {
    * Métodos del componente.
    */
   methods: {
+
     /**
      * Validar el formulario.
      */
@@ -158,16 +160,17 @@ export default {
      */
     async addAveria() {
       const faultData = {
+        name : (this.machineCode.machineCode + " " + this.machineCode.type),
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
-        start: this.startDate,
-        end:this.startDate,
+        start:new Date(this.formatDate(this.startDate)) ,
+        end:new Date(this.formatDate(this.startDate)) ,
         description: this.descriptionDefault,
         accessCode: this.generateUniqueId(),
         state:Constants.PENDIENTE,
         student:Constants.DEFAULT,
         password: this.password,
-        color:"ff0000",
+        color:"#ff4040",
         solution:Constants.DEFAULT,
       };
       try {
@@ -179,7 +182,7 @@ export default {
 
       this.initializeForm();
     },
-
+     
     /**
      * Inicializar el formulario.
      */
@@ -189,8 +192,13 @@ export default {
       this.startDate = Constants.DEFAULT;
       this.descriptionDefault = Constants.DEFAULT;
     },
+    formatDate(fecha) {
+      const fechaCompleta = fecha + "T00:00:00.000Z";
+      return fechaCompleta;
+    }
   },
 };
+
 </script>
 
 <style scoped>

@@ -129,4 +129,27 @@ export default {
       console.error(error);
     }
   },
+
+  async getPrevntivTask() {
+    try {
+      const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+      const tareas = [];
+  
+      snapshot.forEach((doc) => {
+        const preventivoData = doc.data();
+        const tareasPreventivo = preventivoData.tareas || [];
+  
+        tareasPreventivo.forEach((tarea) => {
+          if (tarea.start !== "" && tarea.end !== "") {
+            tareas.push(tarea);
+          }
+        });
+      });
+  
+      return tareas;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  },
 };

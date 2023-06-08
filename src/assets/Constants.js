@@ -33,7 +33,7 @@ export default {
     VALUE_MACHINE_CODE: "machineCode.machineCode",
     VALUE_MAIN_MOTOR_POWER: "mainMotorPower",
     VALUE_MAXIMUM_SPEED: "maximumSpeed",
-    VALUE_NAME_TAREA: "nameTarea",
+    VALUE_NAME_TAREA: "name",
     VALUE_NOMBRE_REPUESTO: "name",
     VALUE_PRECIO: "price",
     VALUE_PROVEEDOR: "supplier",

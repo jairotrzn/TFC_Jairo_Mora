@@ -215,7 +215,7 @@ export default {
      * @returns {void}
      */
     agregarDato() {
-      this.datos.push({ dato: this.nuevoDato });
+      this.datos.push( this.nuevoDato );
       this.nuevoDato = "";
     },
 
@@ -239,18 +239,20 @@ export default {
     async addTarea() {
 
       const tastkDate = {
-          nameTarea: this.nameTarea,
+          name: this.nameTarea,
           category: this.category,
           selectedFrencunce: this.selectedFrencunce,
           datos: this.datos,
           repuestos: this.selectedRepuesto,
           state: "Pendiente",
-          start: "",
-          end: "",
+          start: null,
+          end: null,
           lastDate: "",
+          color:"#90ffbb"
 
       } 
       try {
+        console.log("Voy a guardar")
       await taskRepository.save(tastkDate)
 
         this.$emit("taskCreated");

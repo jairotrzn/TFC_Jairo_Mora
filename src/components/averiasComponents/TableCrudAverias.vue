@@ -1,4 +1,3 @@
-/** * Component for displaying and managing faults. */
 <template>
   <v-app>
     <v-card>
@@ -19,7 +18,7 @@
             fab
             dark
             color="indigo"
-            @click="(dialogCreateFault = true), getMachines()"
+            @click="dialogCreateFault = true"
           >
             <v-icon dark>mdi-plus</v-icon>
           </v-btn>
@@ -39,6 +38,9 @@
             >mdi-delete</v-icon
           >
         </template>
+        <template v-slot:item.start="{ item }">
+          {{ formatDateToTable(item.start) }}
+        </template>
       </v-data-table>
       <FaultDetail />
 
@@ -56,7 +58,7 @@ import CreateFault from "@/components/averiasComponents/CreateFault.vue";
 import PreventivsDetail from "@/components/preventivsComponents/PreventivsDetail.vue";
 import faultRepository from "@/repository/faultRepository";
 import FaultDetail from "./FaultDetail.vue";
-import Constants from '@/assets/Constants';
+import Constants from "@/assets/Constants";
 
 export default {
   components: {
@@ -78,8 +80,16 @@ export default {
           value: Constants.VALUE_ACCESS_CODE,
         },
         { text: Constants.MACHINE_CODE, value: Constants.VALUE_MACHINE_CODE },
-        { text: Constants.FECHA_INICIO, align: "center", value: Constants.VALUE_START_DATE },
-        { text: Constants.ESTADO, align: "center", value: Constants.VALUE_STATE },
+        {
+          text: Constants.FECHA_INICIO,
+          align: "center",
+          value: Constants.VALUE_START_DATE,
+        },
+        {
+          text: Constants.ESTADO,
+          align: "center",
+          value: Constants.VALUE_STATE,
+        },
         { text: "Actions", align: "center", value: "actions" },
       ],
     };
@@ -90,6 +100,19 @@ export default {
   },
 
   methods: {
+    /**
+     * Formats a timestamp to the format 'yyyy-mm-dd'.
+     *
+     * @param {Object} timestamp - The timestamp object.
+     * @returns {string} The formatted date string in 'yyyy-mm-dd' format.
+     */
+    formatDateToTable(timestamp) {
+      const date = new Date(timestamp.seconds * 1000);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     sendItem(item) {
       console.log(item);
       eventBus.$emit("item-selected", item);

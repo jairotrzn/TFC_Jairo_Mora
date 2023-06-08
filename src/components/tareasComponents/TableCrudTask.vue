@@ -173,7 +173,6 @@
               class="mr-4"
               text
               @click="confirmUpDate(selectedTarea); dialogUpDateTarea = false"
-              :disabled="!hayCambios"
               >Actualizar</v-btn
             >
           </v-form>

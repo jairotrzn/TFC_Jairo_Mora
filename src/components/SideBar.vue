@@ -8,7 +8,6 @@
     mini-variant-width="80"
   >  
     <v-avatar class="d-block text-center mx-auto mt-4 mb-16" color="" size="40">
-      <v-icon color="white" x-large>fab fa-artstation</v-icon>
     </v-avatar>
 
     <v-list flat class="mt-16" justify-center>
@@ -43,10 +42,11 @@
         text-align: center;
       "
     >
-      <v-icon class="mb-5" color="white">fas fa-cog</v-icon>
+    
       <br />
-      <v-icon color="white">fas fa-info-circle</v-icon>
-    </div>
+      <a href="https://iestubalcain.net/wordpress/" target="_blank" title="">
+  <v-icon color="white">fas fa-info-circle</v-icon>
+</a>    </div>
   </v-navigation-drawer>
 </template>
 

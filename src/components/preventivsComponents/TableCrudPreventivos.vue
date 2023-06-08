@@ -37,8 +37,11 @@
             small
             class="mr-2"
             color="red"
-            @click="confirmDelete(item)"            >mdi-delete</v-icon
+            @click="confirmDelete(item)" >mdi-delete</v-icon
           >
+        </template>
+        <template v-slot:item.start="{ item }">
+          {{ formatDateToTable(item.start) }}
         </template>
       </v-data-table>
 
@@ -136,6 +139,19 @@ export default {
   },
 
   methods: {
+  /**
+ * Formats a timestamp to the format 'yyyy-mm-dd'.
+ *
+ * @param {Object} timestamp - The timestamp object.
+ * @returns {string} The formatted date string in 'yyyy-mm-dd' format.
+ */
+ formatDateToTable(timestamp) {
+  const date = new Date(timestamp.seconds * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+},
     /**
      * Confirms the deletion of a preventive.
      * @param {Object} item - The preventive item to be deleted.
