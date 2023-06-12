@@ -125,9 +125,8 @@
 </template>
 
 <script>
-import repuestosRepository from '@/repository/repuestosRepository';
-import taskRepository from '@/repository/taskRepository';
-
+ import taskRepository from '@/repository/taskRepository';
+import  repuestosRepository from '@/repository/repuestosRepository'
 export default {
   data() {
     return {

@@ -26,7 +26,7 @@
 
     <v-data-table
       :headers="headers"
-      :items="repuestos"
+      :items="filteredRepuestos"
       :search="searchRepuestos"
       @click="selectedRepuesto = item"
     >
@@ -37,10 +37,7 @@
         <v-icon
           small
           color="blue"
-          @click="
-            selectedRepuesto = item;
-            dialogUpdateRepuesto = true;
-          "
+          @click="openUpdateDialog(item)"
           >mdi-pencil</v-icon
         >
       </template>
@@ -50,7 +47,7 @@
     <v-dialog v-model="dialogUpdateRepuesto">
       <v-card>
         <v-container>
-          <v-form @submit.prevent="updateRepuesto(selectedRepuesto)">
+          <v-form>
             <p><b>DATOS DE REPUESTO</b></p>
 
             <v-row>
@@ -92,12 +89,9 @@
             </v-row>
 
             <v-btn
-              type="submit"
               color="primary"
               class="mr-4"
-              @click.stop="
-                confirmUpDate(selectedRepuesto), (dialogUpdateRepuesto = false)
-              "
+              @click.stop="updateRepuesto(), dialogUpdateRepuesto = false"
               >Guardar Cambios</v-btn
             >
           </v-form>
@@ -116,6 +110,7 @@
 import CreateSpare from "@/components/repuestosComponents/CreateSpare.vue";
 import repuestosRepository from "@/repository/repuestosRepository";
 import Constants from "@/assets/Constants";
+
 export default {
   data() {
     return {
@@ -153,9 +148,9 @@ export default {
        * @returns {Array} - Filtered repuestos
        */
       return this.repuestos.filter((repuesto) => {
-        const searchTerm = this.search.toLowerCase();
+        const searchTerm = this.searchRepuestos.toLowerCase();
         return (
-          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+          repuesto.name.toLowerCase().includes(searchTerm) ||
           repuesto.idRepuesto.toLowerCase().includes(searchTerm)
         );
       });
@@ -189,32 +184,24 @@ export default {
     },
 
     /**
-     * Confirms the update of a repuesto.
+     * Opens the update dialog for a repuesto.
      * @param {Object} item - The repuesto object to be updated.
      * @returns {void}
      */
-    confirmUpDate(item) {
-      if (confirm(Constants.CONFIRM_UP_DATE)) {
-        this.updateRepuesto(item);
-        this.getRepuestos();
-      }
+    openUpdateDialog(item) {
+      this.selectedRepuesto = { ...item }; 
+      this.dialogUpdateRepuesto = true;
     },
 
     /**
      * Updates a repuesto.
-     * @param {Object} selectedRepuesto - The selected repuesto object.
      * @returns {void}
      */
-    async updateRepuesto(selectedRepuesto) {
-      const spareData = {
-        idRepuesto: selectedRepuesto.idRepuesto,
-        name: selectedRepuesto.name,
-        price: selectedRepuesto.price,
-        supplier: selectedRepuesto.supplier,
-      };
+    async updateRepuesto() {
       try {
-        await repuestosRepository.upDate(spareData);
+        await repuestosRepository.upDate(this.selectedRepuesto);
         this.getRepuestos();
+
       } catch (error) {
         console.log(error);
       }

@@ -15,16 +15,14 @@
                     <v-text-field
                       label="Nombre del Responsable"
                       v-model="itemRecibido.namePersonInCharge"
-                    >
-                    </v-text-field>
+                    ></v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Código de acceso"
                       v-model="itemRecibido.accessCode"
                       readonly
-                    >
-                    </v-text-field>
+                    ></v-text-field>
                   </v-col>
                 </v-row>
 
@@ -33,17 +31,14 @@
                     <v-text-field
                       label="Alumno"
                       v-model="itemRecibido.student"
-                    >
-                      
-                    </v-text-field>
+                      :class="{ 'error-input': !itemRecibido.student }"
+                    ></v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       label="Password"
                       v-model="itemRecibido.password"
-                    >
-                    
-                    </v-text-field>
+                    ></v-text-field>
                   </v-col>
                 </v-row>
 
@@ -53,9 +48,7 @@
                       type="date"
                       label="Fecha de inicio"
                       v-model="formattedDateTextField"
-                    >
-                
-                    </v-text-field>
+                    ></v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
@@ -63,9 +56,7 @@
                       v-model="itemRecibido.state"
                       :readonly="isReadOnly"
                       :class="estadoClase"
-                    >
-                   
-                    </v-text-field>
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -84,8 +75,7 @@
                         label="Código de Máquina"
                         v-model="itemRecibido.machineCode.machineCode"
                         :readonly="isReadOnly"
-                      >
-                      </v-text-field>
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -94,8 +84,7 @@
                         label="Nombre de la Máquina"
                         v-model="itemRecibido.machineCode.type"
                         :readonly="isReadOnly"
-                      >
-                      </v-text-field>
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -104,16 +93,14 @@
                         label="Ubicación"
                         v-model="itemRecibido.machineCode.location"
                         :readonly="isReadOnly"
-                      >
-                      </v-text-field>
+                      ></v-text-field>
                     </v-col>
                     <v-col cols="6">
                       <v-text-field
                         label="Departamento"
                         v-model="itemRecibido.machineCode.department"
                         :readonly="isReadOnly"
-                      >
-                      </v-text-field>
+                      ></v-text-field>
                     </v-col>
                   </v-row>
                 </v-card-text>
@@ -131,7 +118,7 @@
             >
               <template v-slot:activator>
                 <v-list-item-content class="headline">
-                  {{ tarea.nameTarea }}
+                  {{ tarea.name }}
                 </v-list-item-content>
               </template>
               <v-list-item-subtitle class="text-center"
@@ -139,11 +126,11 @@
               >
               <v-list>
                 <v-list-item
-                  v-for="(datos, repuestoIndex) in tarea.datos"
+                  v-for="(dato, repuestoIndex) in tarea.datos"
                   :key="repuestoIndex"
                 >
                   <v-list-item-content class="text-right">
-                    {{ repuestoIndex + 1 + ". " + datos.dato }}
+                    {{ repuestoIndex + 1 + ". " + dato }}
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -156,7 +143,7 @@
                   :key="repuestoIndex"
                 >
                   <v-list-item-content class="text-right">
-                    - {{repuesto.idRepuesto + "  " +  repuesto.name}}
+                    - {{ repuesto.idRepuesto + "  " + repuesto.name }}
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -166,19 +153,21 @@
             </v-list-group>
           </v-list>
         </v-card>
-        <v-btn  @click="confirmUpdate" 
-          >Actualizar</v-btn
-        >
+        <div class="d-flex justify-space-between">
+          <v-btn @click="confirmFinisPreventiv" color="primary" :disabled="itemRecibido.state === 'Finalizado'">
+  Finalizar Preventivo
+</v-btn>
+          <v-btn @click="confirmUpdate" color="primary">Actualizar</v-btn>
+        </div>
       </v-container>
     </v-card-text>
   </v-card>
-  
 </template>
 
 <script>
 import eventBus from "@/config/eventBus";
 import preventivRepository from "@/repository/preventivRepository";
-import Constants from '@/assets/Constants';
+import Constants from "@/assets/Constants";
 
 export default {
   data() {
@@ -214,47 +203,46 @@ export default {
       return ""; // No additional class
     },
     /**
- * The formattedDateTextField property getter and setter.
- *
- * @type {Object}
- * @property {string} get - The getter function for the formattedDateTextField property.
- * @property {Function} set - The setter function for the formattedDateTextField property.
- */
-formattedDateTextField: {
-  /**
-   * Getter function for the formattedDateTextField property.
-   *
-   * @returns {string} The formatted date string in 'yyyy-mm-dd' format, or an empty string if not available.
-   */
-  get() {
-    if (this.itemRecibido && this.itemRecibido.start) {
-      const dateObj = new Date(this.itemRecibido.start.seconds * 1000);
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
-    return "";
-  },
-  /**
-   * Setter function for the formattedDateTextField property.
-   *
-   * @param {string} value - The date string in 'yyyy-mm-dd' format to be set.
-   */
-  set(value) {
-    if (this.itemRecibido) {
-      const parts = value.split("-");
-      const year = parseInt(parts[0]);
-      const month = parseInt(parts[1]) - 1;
-      const day = parseInt(parts[2]);
-      const date = new Date(year, month, day);
-      this.itemRecibido.start = {
-        seconds: Math.floor(date.getTime() / 1000), // Convert from milliseconds to seconds
-      };
-    }
-  },
-},
-
+     * The formattedDateTextField property getter and setter.
+     *
+     * @type {Object}
+     * @property {string} get - The getter function for the formattedDateTextField property.
+     * @property {Function} set - The setter function for the formattedDateTextField property.
+     */
+    formattedDateTextField: {
+      /**
+       * Getter function for the formattedDateTextField property.
+       *
+       * @returns {string} The formatted date string in 'yyyy-mm-dd' format, or an empty string if not available.
+       */
+      get() {
+        if (this.itemRecibido && this.itemRecibido.start) {
+          const dateObj = new Date(this.itemRecibido.start.seconds * 1000);
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        }
+        return "";
+      },
+      /**
+       * Setter function for the formattedDateTextField property.
+       *
+       * @param {string} value - The date string in 'yyyy-mm-dd' format to be set.
+       */
+      set(value) {
+        if (this.itemRecibido) {
+          const parts = value.split("-");
+          const year = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const day = parseInt(parts[2]);
+          const date = new Date(year, month, day);
+          this.itemRecibido.start = {
+            seconds: Math.floor(date.getTime() / 1000), // Convert from milliseconds to seconds
+          };
+        }
+      },
+    },
   },
   created() {
     /**
@@ -264,6 +252,19 @@ formattedDateTextField: {
     eventBus.$on("item-selected", this.procesarItem);
   },
   methods: {
+    /**
+     * Confirms the finish of the preventiv
+     * @returns {void}
+     */
+    confirmFinisPreventiv() {
+      if (
+        confirm(
+          "Deseas finalizar el preventivo? Se calcularan las próximas fechas de las tareas realizadas"
+        )
+      ) {
+        this.updatePreventivTask(this.itemRecibido);
+      }
+    },
     /**
      * Confirms the update of the item
      * @returns {void}
@@ -284,7 +285,68 @@ formattedDateTextField: {
       this.isReadOnly = true;
       this.hasChanges = false;
     },
- 
+
+/**
+ * Calculates the start date based on the frequency.
+ * @param {string} frequency - The frequency of the task ("Diaria", "Semanal", "Quincenal", "Mensual").
+ * @returns {Date} - The calculated start date.
+ */
+ calculateStartDate(frequency) {
+  const currentDate = new Date();
+  
+  if (frequency === "Diaria") {
+    return currentDate;
+  } else if (frequency === "Semanal") {
+    currentDate.setDate(currentDate.getDate() + 7);
+    return currentDate;
+  } else if (frequency === "Quincenal") {
+    currentDate.setDate(currentDate.getDate() + 14);
+    return currentDate;
+  } else if (frequency === "Mensual") {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    return currentDate;
+  }
+  
+  // If the frequency doesn't match any of the options above, return the current date
+  return currentDate;
+},
+
+/**
+ * Updates the preventive task.
+ * @returns {Promise<void>}
+ */
+async updatePreventivTask() {
+  const tareas = this.itemRecibido.tareas;
+
+  tareas.forEach((tarea) => {
+    const frequency = tarea.selectedFrencunce;
+    tarea.start = this.calculateStartDate(frequency);
+    tarea.end = this.calculateStartDate(frequency);
+    tarea.description = this.itemRecibido.machineCode.machineCode;
+  });
+
+  try {
+    const preventData = {
+      namePersonInCharge: this.itemRecibido.namePersonInCharge,
+      accessCode: this.itemRecibido.accessCode,
+      student: this.itemRecibido.student,
+      password: this.itemRecibido.password,
+      start: new Date(this.formattedDateTextField),
+      state: "Finalizado",
+      machineCode: this.itemRecibido.machineCode,
+      tareas: tareas,
+    };
+
+    await preventivRepository.upDate(preventData);
+  } catch (error) {
+    console.error(error);
+  }
+
+  eventBus.$emit("changes-saved");
+  this.isReadOnly = true;
+  this.hasChanges = false;
+},
+
     /**
      * Updates the item
      * @param {Object} itemRecibido - Item to update
@@ -307,7 +369,7 @@ formattedDateTextField: {
         console.error(error);
       }
 
-      eventBus.$emit("changes-saved");
+      //eventBus.$emit("changes-saved");
       this.isReadOnly = true;
       this.hasChanges = false;
     },

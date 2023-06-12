@@ -10,6 +10,9 @@
             <v-col cols="12" sm="12">
             </v-col>
             <v-col cols="12" sm="12">
+            <h1>Repuestos</h1>
+            </v-col>
+            <v-col cols="12" sm="12">
               <TableCrudSpare />
             </v-col>
           </v-row>

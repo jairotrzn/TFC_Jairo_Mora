@@ -5,7 +5,7 @@
         <v-row justify="center">
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
-              <v-img src="@/assets/LogoProyecto.jpg" height="250"></v-img>
+              <v-img src="@/assets/LogoProyecto.png" height="250"></v-img>
               <v-card-text>
                 <v-form @submit.prevent="login">
                   <v-text-field

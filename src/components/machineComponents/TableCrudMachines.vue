@@ -33,20 +33,20 @@
           small
           class="mr-2"
           color="red"
-          @click="(selectedMachine = item), confirmDelete(selectedMachine)"
+          @click=" confirmDelete(item)"
           >mdi-delete</v-icon
         >
         <v-icon
           small
           color="blue"
           @click="
-            selectedMachine = item;
             dialogUpdate = true;
           "
           >mdi-pencil</v-icon
         >
       </template>
     </v-data-table>
+
     <v-expansion-panels>
       <v-expansion-panel>
         <v-expansion-panel-header
@@ -244,24 +244,13 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-
-            <v-file-input
-              v-model="image"
-              accept="image/*"
-              label="Agregar una imagen"
-            ></v-file-input>
-            <v-btn
-              color="primary"
-              class="mr-4"
-              @click="dialogoConfirmUpdate = true"
-              >Guardar Cambios</v-btn
-            >
             <v-btn
               color="primary"
               class="mr-4"
               @click="confirmUpDate(selectedMachine)"
-              >Cancelar</v-btn
+              >Guardar Cambios</v-btn
             >
+   
           </v-form>
         </v-container>
       </v-card>
@@ -449,8 +438,10 @@ export default {
      * @returns {void}
      */
     async updateMachine(selectedMachine) {
+      console.log(selectedMachine)
       try {
         const machineData = {
+          id:selectedMachine.id,
           image: selectedMachine.image,
           type: selectedMachine.type,
           location: selectedMachine.location,

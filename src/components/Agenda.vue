@@ -82,14 +82,10 @@
               <template v-else-if="selectedEvent.color === '#ecab0f'">
                 <p><b>Lista de tareas</b></p>
                 <span v-html="selectedEvent.tareas.name"></span>
-                >
               </template>
               <template v-else-if="selectedEvent.color === '#90ffbb'">
-                <p><b>Información verde</b></p>
-                <span
-                  >Esta es información específica para eventos con color
-                  verde.</span
-                >
+                <p><b>Información de Máquina</b></p>
+
               </template>
               <template v-else>
                 <p><b>Otro color</b></p>
@@ -99,6 +95,7 @@
                 >
               </template>
             </v-card-text>
+
           </v-card>
         </v-menu>
       </v-sheet>
@@ -114,22 +111,17 @@
       </v-card>
 
       <v-alert
-          v-if="getPastDueEventsCount > 0"
-          type="error"
-          class="mt-4 blinking"
-        >
-          Tienes {{ getPastDueEventsCount }} evento(s) atrasado(s).
-        </v-alert>
+        v-if="getPastDueEventsCount > 0"
+        type="error"
+        class="mt-4 blinking"
+      >
+        Tienes {{ getPastDueEventsCount }} evento(s) atrasado(s).
+      </v-alert>
 
-        <v-alert
-          v-else
-          type="success"
-          class="mt-4"
-          color="green"
-        >
-          Enhorabuena, tienes todas las tareas al día.
-          <v-icon>mdi-thumb-up</v-icon>
-        </v-alert>
+      <v-alert v-else type="success" class="mt-4" color="green">
+        Enhorabuena, tienes todas las tareas al día.
+        <v-icon>mdi-thumb-up</v-icon>
+      </v-alert>
     </v-col>
   </v-row>
 </template>
@@ -237,10 +229,13 @@ export default {
       try {
         const preventivs = await preventivRepository.getAll();
         const faults = await faultRepository.getAll();
-       // const futureTask = await preventivRepository.getPrevntivTask();
-        this.events = [ ...faults,...preventivs];
-        console.log(...faults,...preventivs);
-        this.transformEventsDateFormat(); // Agregar llamada a la función de transformación
+        const futureTask = await preventivRepository.getPrevntivTask();
+
+        this.events = [...faults, ...preventivs, ...futureTask].filter(
+          (event) => event.state === "Pendiente"
+        );
+
+        this.transformEventsDateFormat();
       } catch (error) {
         console.log(error);
       }
@@ -284,7 +279,7 @@ export default {
       }
 
       nativeEvent.stopPropagation();
-    },    
+    },
     formatDateToTable(timestamp) {
       const date = new Date(timestamp.seconds * 1000);
       const year = date.getFullYear();

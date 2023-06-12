@@ -6,9 +6,12 @@
     <SideBar />
     <Navbar />
     <v-container>
-      <v-col cols="12" sm="12">     
-            </v-col>
-      <TableCrudPreventivos />
+      <v-col cols="12" sm="12">
+        <h1>Preventivos</h1>
+      </v-col>
+      <v-col cols="12" sm="12">
+        <TableCrudPreventivos />
+      </v-col>
     </v-container>
   </v-app>
 </template>
@@ -23,7 +26,6 @@ export default {
   data: () => ({}),
 
   components: {
-    
     SideBar,
     Navbar,
     TableCrudPreventivos,

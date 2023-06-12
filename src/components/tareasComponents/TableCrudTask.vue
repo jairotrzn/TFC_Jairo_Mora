@@ -68,7 +68,7 @@
                 <v-text-field
                   type="text"
                   label="Agregar nombre de tarea"
-                  v-model="selectedTarea.nameTarea"
+                  v-model="selectedTarea.name"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
@@ -127,7 +127,8 @@
                           class="mr-2"
                           color="red"
                           @click="deleteDatos(item)"
-                        >mdi-delete</v-icon>
+                          >mdi-delete</v-icon
+                        >
                       </tr>
                     </template>
                   </v-data-table>
@@ -135,44 +136,39 @@
               </v-col>
             </v-row>
             <v-row>
-          <v-col cols="12">
-            <v-card>
-              <h4>Lista de repuestos necesarios</h4>
-    
-              <v-data-table
-                v-model="selectedTarea.selectedRepuesto"
-                :headers="headersTablaRepuestos"
-                :items="selectedTarea.repuestos"
-                :single-select="singleSelect"
-                item-key="id"
-                show-select
-                class="elevation-1"
-                @input="updateSelectedItems"
-              >
-                <template v-slot:top>
-                  <v-toolbar flat>
-                    <v-toolbar-title>Repuestos</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                      v-model="search"
-                      append-icon="mdi-magnify"
-                      label="Buscar"
-                      single-line
-                      hide-details
-                    ></v-text-field>
-                  </v-toolbar>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
+              <v-col cols="12">
+                <v-card>
+                  <h4>Lista de repuestos necesarios</h4>
 
+                  <v-data-table
+                    v-model="selectedTarea.selectedRepuesto"
+                    :headers="headersTablaRepuestos"
+                    :items="repuestosDB"
+                    :single-select="singleSelect"
+                    item-key="id"
+                    show-select
+                    class="elevation-1"
+                    @input="updateSelectedItems"
+                  >
+                    <template v-slot:top>
+                      <v-toolbar flat>
+                        <v-toolbar-title>Repuestos</v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-text-field
+                          v-model="search"
+                          append-icon="mdi-magnify"
+                          label="Buscar"
+                          single-line
+                          hide-details
+                        ></v-text-field>
+                      </v-toolbar>
+                    </template>
+                  </v-data-table>
+                </v-card>
+              </v-col>
             </v-row>
 
-            <v-btn
-              color="primary"
-              class="mr-4"
-              text
-              @click="confirmUpDate(selectedTarea); dialogUpDateTarea = false"
+            <v-btn color="primary" class="mr-4" text @click="confirmUpDate"
               >Actualizar</v-btn
             >
           </v-form>
@@ -191,12 +187,13 @@
 import eventBus from "@/config/eventBus";
 import CreateTask from "@/components/tareasComponents/CreateTask.vue";
 import taskRepository from "@/repository/taskRepository";
-import Constants from '@/assets/Constants';
+import Constants from "@/assets/Constants";
+import repuestosRepository from "@/repository/repuestosRepository";
+
 export default {
   data() {
     return {
       singleSelect: false,
-      repuestos: [],
       repuestosDB: [],
       searchRepuestos: "",
       selectedRepuesto: [],
@@ -219,7 +216,7 @@ export default {
       priceRepuesto: "",
       provaiderRepuesto: "",
       selectedFrencunce: "",
-      frecuencias:Constants.FRECUENCIAS,
+      frecuencias: Constants.FRECUENCIAS,
 
       selected: [],
       repuestos: [],
@@ -231,8 +228,16 @@ export default {
           value: Constants.VALUE_ID_REPUESTO,
         },
         { text: Constants.NOMBRE_REPUESTO, value: "name" },
-        { text: Constants.PRECIO, align: "center", value: Constants.VALUE_PRECIO },
-        { text: Constants.PROVEEDOR, align: "center", value: Constants.VALUE_PROVEEDOR },
+        {
+          text: Constants.PRECIO,
+          align: "center",
+          value: Constants.VALUE_PRECIO,
+        },
+        {
+          text: Constants.PROVEEDOR,
+          align: "center",
+          value: Constants.VALUE_PROVEEDOR,
+        },
       ],
       headers: [
         {
@@ -242,7 +247,11 @@ export default {
           value: Constants.VALUE_NAME_TAREA,
         },
         { text: Constants.CATEGORIA, value: Constants.VALUE_CATEGORIA },
-        { text: Constants.FRECUENCIA, align: "center", value: Constants.VALUE_FRECUENCIA },
+        {
+          text: Constants.FRECUENCIA,
+          align: "center",
+          value: Constants.VALUE_FRECUENCIA,
+        },
         { text: Constants.ACCIONES, value: Constants.VALUE_ACTIONS },
       ],
     };
@@ -253,17 +262,18 @@ export default {
      * @returns {void}
      */
     this.getTareas();
-},
+    this.getRepuestos();
+  },
 
-computed: {
+  computed: {
     /**
      * Checks if the form is valid.
      * @returns {boolean} - Returns true if the form is valid, otherwise false.
      */
     isFormValid() {
-        return (
-            this.nameTarea !== "" && this.category !== "" && this.nuevoDato !== ""
-        );
+      return (
+        this.nameTarea !== "" && this.category !== "" && this.nuevoDato !== ""
+      );
     },
 
     /**
@@ -271,28 +281,28 @@ computed: {
      * @returns {Array} - Filtered repuestos.
      */
     filteredRepuestos() {
-        return this.repuestos.filter((repuesto) => {
-            const searchTerm = this.search.toLowerCase();
-            return (
-                repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
-                repuesto.idRepuesto.toLowerCase().includes(searchTerm)
-            );
-        });
+      return this.repuestos.filter((repuesto) => {
+        const searchTerm = this.search.toLowerCase();
+        return (
+          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+          repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+        );
+      });
     },
-},
+  },
 
-components: {
+  components: {
     CreateTask,
-},
+  },
 
-methods: {
+  methods: {
     /**
      * Handles the task creation event.
      * @returns {void}
      */
     handlTaskCreated() {
-        this.dialogCreatTarea = false;
-        this.getTareas();
+      this.dialogCreatTarea = false;
+      this.getTareas();
     },
 
     /**
@@ -301,10 +311,10 @@ methods: {
      * @returns {void}
      */
     deleteDatos(item) {
-        const index = this.selectedTarea.datos.indexOf(item);
-        if (index !== -1) {
-            this.selectedTarea.datos.splice(index, 1);
-        }
+      const index = this.selectedTarea.datos.indexOf(item);
+      if (index !== -1) {
+        this.selectedTarea.datos.splice(index, 1);
+      }
     },
 
     /**
@@ -313,22 +323,20 @@ methods: {
      * @returns {void}
      */
     confirmDelete(item) {
-        if (confirm(Constants.CONFIRM_DELETE)) {
-            this.deleteTarea(item);
-            this.getAll();
-        }
+      if (confirm(Constants.CONFIRM_DELETE)) {
+        this.deleteTarea(item);
+      }
     },
 
     /**
      * Asks for confirmation before updating a tarea.
-     * @param {Object} item - The tarea object to be updated.
      * @returns {void}
      */
-    confirmUpDate(item) {
-        if (confirm(Constants.CONFIRM_UP_DATE)) {
-            this.updateTare(item);
-            this.getAll();
-        }
+    confirmUpDate() {
+      if (confirm(Constants.CONFIRM_UP_DATE)) {
+        this.updateTare(this.selectedTarea);
+        this.dialogUpDateTarea = false;
+      }
     },
 
     /**
@@ -336,11 +344,11 @@ methods: {
      * @returns {void}
      */
     mostrarDatosRepuestos() {
-        const nombresSeleccionados = [];
-        this.selectedRepuesto.forEach((item) => {
-            nombresSeleccionados.push(item.nameRepuesto);
-        });
-        console.log("Nombres seleccionados:", nombresSeleccionados);
+      const nombresSeleccionados = [];
+      this.selectedRepuesto.forEach((item) => {
+        nombresSeleccionados.push(item.nameRepuesto);
+      });
+      console.log("Nombres seleccionados:", nombresSeleccionados);
     },
 
     /**
@@ -348,9 +356,9 @@ methods: {
      * @returns {void}
      */
     updateSelectedItems() {
-        this.selectedRepuestos = this.repuestosDB.filter(
-            (item) => item.isSelected
-        );
+      this.selectedRepuestos = this.repuestosDB.filter(
+        (item) => item.isSelected
+      );
     },
 
     /**
@@ -359,7 +367,7 @@ methods: {
      * @returns {void}
      */
     sendItem(item) {
-        eventBus.$emit("item-selected", item);
+      eventBus.$emit("item-selected", item);
     },
 
     /**
@@ -368,10 +376,10 @@ methods: {
      * @returns {void}
      */
     deleteDato(item) {
-        const index = this.datos.indexOf(item);
-        if (index !== -1) {
-            this.datos.splice(index, 1);
-        }
+      const index = this.datos.indexOf(item);
+      if (index !== -1) {
+        this.datos.splice(index, 1);
+      }
     },
 
     /**
@@ -379,28 +387,30 @@ methods: {
      * @returns {void}
      */
     agregarDato() {
-        this.datos.push({ dato: this.nuevoDato });
-        this.nuevoDato = "";
+      this.datos.push({ dato: this.nuevoDato });
+      this.nuevoDato = "";
     },
 
     /**
      * Updates a tarea in the database.
-     * @param {Object} selectedTarea - The tarea object to be updated.
      * @returns {void}
      */
-    async updateTare(selectedTarea) {
-      const tastkDate = {
-                nameTarea: selectedTarea.nameTarea,
-                category: selectedTarea.category,
-                selectedFrencunce: selectedTarea.selectedFrencunce,
-                provaiderRepuesto: selectedTarea.provaiderRepuesto,
+    async updateTare() {
+      const taskData = {
+        id: this.selectedTarea.id,
+        color: "#90ffbb",
+        name: this.selectedTarea.name,
+        category: this.selectedTarea.category,
+        selectedFrencunce: this.selectedTarea.selectedFrencunce,
+        datos: this.selectedTarea.datos,
+        selectedRepuesto: this.selectedTarea.selectedRepuesto,
+      };
+      try {
+        await taskRepository.upDate(taskData);
+        console.log("modificado");
+      } catch (error) {
+        console.log(error);
       }
-        try {
-      await taskRepository.upDate(tastkDate)
-            this.getRepuestos();
-        } catch (error) {
-            console.log(error);
-        }
     },
 
     /**
@@ -409,13 +419,12 @@ methods: {
      * @returns {void}
      */
     async deleteTarea(item) {
-
-        try {
-         await taskRepository.delete(item)
-         this.getTareas()
-        } catch (error) {
-            console.log(error);
-        }
+      try {
+        await taskRepository.delete(item);
+        this.getTareas();
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     /**
@@ -423,12 +432,24 @@ methods: {
      * @returns {void}
      */
     async getTareas() {
-        try {
-            this.tareas = await taskRepository.getAll()
-        } catch (error) {
-            console.log(error);
-        }
+      try {
+        this.tareas = await taskRepository.getAll();
+      } catch (error) {
+        console.log(error);
+      }
     },
-},
+
+    /**
+     * Retrieves the list of repuestos from the database.
+     * @returns {void}
+     */
+    async getRepuestos() {
+      try {
+        this.repuestosDB = await repuestosRepository.getAll();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
 };
 </script>

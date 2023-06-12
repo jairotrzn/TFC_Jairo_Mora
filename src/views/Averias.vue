@@ -6,7 +6,9 @@
     <SideBar />
     <Navbar />
     <v-container>
-     <br/>
+      <v-col cols="12" sm="12">
+        <h1>Averias</h1>
+      </v-col>
       <TableCrudAverias />
     </v-container>
   </v-app>

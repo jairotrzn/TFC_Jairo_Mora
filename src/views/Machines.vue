@@ -11,6 +11,9 @@
             <v-col cols="12" sm="12">     
             </v-col>
             <v-col cols="12" sm="12">
+            <h1>Máquinas </h1>
+            </v-col>
+            <v-col cols="12" sm="12">
               <TableCrudMachine />
             </v-col>
           </v-row>

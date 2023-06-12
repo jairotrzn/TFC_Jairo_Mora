@@ -10,6 +10,9 @@
         <v-col cols="12" sm="9">
           <v-row>
             <v-col cols="12" sm="12">
+            <h1>Tareas</h1>
+            </v-col>
+            <v-col cols="12" sm="12">
              <TableCrudTask/>
             </v-col>
           </v-row>

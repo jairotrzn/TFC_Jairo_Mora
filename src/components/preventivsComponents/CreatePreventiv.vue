@@ -38,11 +38,11 @@
           </v-col>
         </v-row>
         <v-data-table
-          v-model="selectedPreventiv"
+          v-model="selectedTask"
           :headers="headersTablaTareas"
           :items="filteredTareas"
           :single-select="singleSelectTarea"
-          item-key="nameTarea"
+          item-key="name"
           show-select
           class="elevation-1"
         >
@@ -67,7 +67,6 @@
           color="primary"
           class="mr-4"
           @click.stop="validateForm"
-          :disabled="isFormIncomplete"
           >Crear Nuevo Preventivo</v-btn
         >
         <br />
@@ -95,7 +94,7 @@ export default {
       machines: [], // List of machines
       tareas: [], // List of tasks
       namePersonInCharge: "", // Name of the responsible person
-      selectedPreventiv: [], // Selected preventive tasks
+      selectedTask: [], // Selected preventive tasks
       search: "", // Search term for task filtering
       headersTablaTareas: [
         // Headers for the task data table
@@ -204,7 +203,7 @@ export default {
         name: (this.machineCode.machineCode + " " + this.machineCode.type),
         namePersonInCharge: this.namePersonInCharge,
         machineCode: this.machineCode,
-        tareas: this.selectedPreventiv,
+        tareas: this.selectedTask,
         start: new Date(this.formatDate(this.startDate)),
         end: new Date(this.formatDate(this.startDate)),
         accessCode: this.generateUniqueId(),

@@ -1,22 +1,24 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title>
-        <h2>{{ itemRecibido.nameTarea }}</h2>
+    <v-card class="fade-in">
+      <v-card-title class="slide-left">
+        <h2>
+          {{ itemRecibido.name }}
+        </h2>
       </v-card-title>
       <v-divider></v-divider>
-      <v-card-text>
-        <p><b>Frecuencia:</b> {{ itemRecibido.selectedFrencunce }}</p>
-        <p><b>Categoria:</b> {{ itemRecibido.category }}</p>
-        <h3>Procedimiento:</h3>
+      <v-card-text class="fade-in">
+        <p><b><v-icon>mdi-timer</v-icon> Frecuencia:</b> {{ itemRecibido.selectedFrencunce }}</p>
+        <p><b><v-icon>mdi-tag</v-icon> Categoria:</b> {{ itemRecibido.category }}</p>
+        <h3><v-icon>mdi-cogs</v-icon> Procedimiento:</h3>
         <ul>
-          <li v-for="(dato, index) in itemRecibido.datos" :key="index">
-            {{dato }}
+          <li v-for="(dato, index) in itemRecibido.datos" :key="index" class="slide-up">
+            {{ dato }}
           </li>
         </ul>
-        <h3>Repuestos</h3>
+        <h3><v-icon>mdi-tools</v-icon> Repuestos</h3>
         <ul>
-          <li v-for="(repuesto, index) in itemRecibido.repuestos" :key="index">
+          <li v-for="(repuesto, index) in itemRecibido.repuestos" :key="index" class="slide-up">
             {{ repuesto.idRepuesto }} - {{ repuesto.name }}
           </li>
         </ul>
@@ -24,8 +26,8 @@
     </v-card>
   </div>
 </template>
-  
-  <script>
+
+<script>
 import eventBus from '@/config/eventBus';
 
 export default {
@@ -53,3 +55,46 @@ export default {
   },
 };
 </script>
+
+<style>
+.fade-in {
+  animation: fade-in 0.5s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-left {
+  animation: slide-left 0.5s ease;
+}
+
+@keyframes slide-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.slide-up {
+  animation: slide-up 0.5s ease;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>

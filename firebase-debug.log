@@ -1,0 +1,42 @@
+[debug] [2023-06-09T16:54:13.708Z] ----------------------------------------------------------------------
+[debug] [2023-06-09T16:54:13.711Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\jairo\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init hosting
+[debug] [2023-06-09T16:54:13.712Z] CLI Version:   12.0.0
+[debug] [2023-06-09T16:54:13.712Z] Platform:      win32
+[debug] [2023-06-09T16:54:13.712Z] Node Version:  v18.16.0
+[debug] [2023-06-09T16:54:13.722Z] Time:          Fri Jun 09 2023 18:54:13 GMT+0200 (hora de verano de Europa central)
+[debug] [2023-06-09T16:54:13.722Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-06-09T16:54:13.726Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2023-06-09T16:54:13.782Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-06-09T16:54:13.782Z] > authorizing via signed-in user (jairomora61@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\jairo\OneDrive\Escritorio\TFC_Jairo_Mora
+
+[debug] [2023-06-09T16:54:14.257Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2023-06-09T16:54:14.258Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2023-06-09T16:54:22.974Z] > refreshing access token with scopes: []
+[debug] [2023-06-09T16:54:22.976Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2023-06-09T16:54:22.976Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-06-09T16:54:23.351Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2023-06-09T16:54:23.352Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-06-09T16:54:23.372Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2023-06-09T16:54:24.184Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2023-06-09T16:54:24.185Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] i  Using project calendariomantenimiento-d401a (CalendarioMantenimiento) 
+[info] 
+=== Hosting Setup

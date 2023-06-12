@@ -37,7 +37,7 @@
             ></v-text-field>
           </v-col>
         </v-row>
-        
+
         <v-row>
           <v-col cols="12" md="4">
             <v-text-field
@@ -58,10 +58,9 @@
               :rules="[(v) => !!v || 'Este campo es obligatorio']"
               required
               dense
-              
             ></v-text-field>
           </v-col>
-     
+
           <v-col cols="12" md="4">
             <v-text-field
               type="text"
@@ -70,6 +69,13 @@
               required
               dense
             ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="itemRecibido.state"
+              :items="states"
+              label="Estado"
+            ></v-select>
           </v-col>
         </v-row>
 
@@ -92,10 +98,7 @@
           shaped
         ></v-textarea>
         <br />
-        <v-btn
-          color="primary"
-          class="mr-4"
-          @click="confirmUpDate()"
+        <v-btn color="primary" class="mr-4" @click="confirmUpDate()"
           >Guardar cambios</v-btn
         >
         <br />
@@ -109,11 +112,11 @@
  * Component for creating a new corrective task.
  */
 
- import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import machineRepository from "@/repository/machineRepository";
 import eventBus from "@/config/eventBus";
-import faultRepository from '@/repository/faultRepository';
-import Constants from '@/assets/Constants';
+import faultRepository from "@/repository/faultRepository";
+import Constants from "@/assets/Constants";
 
 export default {
   /**
@@ -134,6 +137,7 @@ export default {
         solution: "",
       },
       machines: [],
+      states:["Pendiente","En Proceso","Finalizado"]
     };
   },
 
@@ -141,7 +145,7 @@ export default {
    * Lifecycle hook: Called when the component is created.
    */
   created() {
-    eventBus.$on('item-selected', this.procesarItem);
+    eventBus.$on("item-selected", this.procesarItem);
     this.getMachines();
   },
 
@@ -154,52 +158,52 @@ export default {
      * @returns {string} The error message if the machine code is invalid, an empty string otherwise.
      */
     getMachineCodeError() {
-      return this.itemRecibido.machineCode && !this.machines.includes(this.itemRecibido.machineCode)
+      return this.itemRecibido.machineCode &&
+        !this.machines.includes(this.itemRecibido.machineCode)
         ? Constants.OPCION_NO_DISPONIBLE
         : Constants.DEFAULT;
     },
- /**
- * The formattedDateTextField property getter and setter.
- *
- * @type {Object}
- * @property {string} get - The getter function for the formattedDateTextField property.
- * @property {Function} set - The setter function for the formattedDateTextField property.
- */
-formattedDateTextField: {
-  /**
-   * Getter function for the formattedDateTextField property.
-   *
-   * @returns {string} The formatted date string in 'yyyy-mm-dd' format, or an empty string if not available.
-   */
-  get() {
-    if (this.itemRecibido && this.itemRecibido.start) {
-      const dateObj = new Date(this.itemRecibido.start.seconds * 1000);
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
-    return "";
-  },
-  /**
-   * Setter function for the formattedDateTextField property.
-   *
-   * @param {string} value - The date string in 'yyyy-mm-dd' format to be set.
-   */
-  set(value) {
-    if (this.itemRecibido) {
-      const parts = value.split("-");
-      const year = parseInt(parts[0]);
-      const month = parseInt(parts[1]) - 1;
-      const day = parseInt(parts[2]);
-      const date = new Date(year, month, day);
-      this.itemRecibido.start = {
-        seconds: Math.floor(date.getTime() / 1000), // Convert from milliseconds to seconds
-      };
-    }
-  },
-},
-
+    /**
+     * The formattedDateTextField property getter and setter.
+     *
+     * @type {Object}
+     * @property {string} get - The getter function for the formattedDateTextField property.
+     * @property {Function} set - The setter function for the formattedDateTextField property.
+     */
+    formattedDateTextField: {
+      /**
+       * Getter function for the formattedDateTextField property.
+       *
+       * @returns {string} The formatted date string in 'yyyy-mm-dd' format, or an empty string if not available.
+       */
+      get() {
+        if (this.itemRecibido && this.itemRecibido.start) {
+          const dateObj = new Date(this.itemRecibido.start.seconds * 1000);
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        }
+        return "";
+      },
+      /**
+       * Setter function for the formattedDateTextField property.
+       *
+       * @param {string} value - The date string in 'yyyy-mm-dd' format to be set.
+       */
+      set(value) {
+        if (this.itemRecibido) {
+          const parts = value.split("-");
+          const year = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const day = parseInt(parts[2]);
+          const date = new Date(year, month, day);
+          this.itemRecibido.start = {
+            seconds: Math.floor(date.getTime() / 1000), // Convert from milliseconds to seconds
+          };
+        }
+      },
+    },
   },
 
   /**
@@ -223,6 +227,7 @@ formattedDateTextField: {
         namePersonInCharge: this.itemRecibido.namePersonInCharge,
         machineCode: this.itemRecibido.machineCode,
         start: new Date(this.formattedDateTextField),
+        end: new Date(this.formattedDateTextField),
         description: this.itemRecibido.description,
         accessCode: this.itemRecibido.accessCode,
         state: this.itemRecibido.state,

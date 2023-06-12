@@ -60,7 +60,7 @@
 /**
  * Vue component for managing preventives.
  */
- import eventBus from "@/config/eventBus";
+import eventBus from "@/config/eventBus";
 import PreventivsDetail from "@/components/preventivsComponents/PreventivsDetail.vue";
 import CreatePreventiv from "./CreatePreventiv.vue";
 import preventivRepository from "@/repository/preventivRepository";
@@ -97,7 +97,9 @@ export default {
 
   created() {
     this.getPreventivos();
+    eventBus.$on("changes-saved", this.getPreventivos);
   },
+
   computed: {
     /**
      * Filters the tasks based on the search term.
@@ -139,19 +141,19 @@ export default {
   },
 
   methods: {
-  /**
- * Formats a timestamp to the format 'yyyy-mm-dd'.
- *
- * @param {Object} timestamp - The timestamp object.
- * @returns {string} The formatted date string in 'yyyy-mm-dd' format.
- */
- formatDateToTable(timestamp) {
-  const date = new Date(timestamp.seconds * 1000);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-},
+    /**
+     * Formats a timestamp to the format 'yyyy-mm-dd'.
+     *
+     * @param {Object} timestamp - The timestamp object.
+     * @returns {string} The formatted date string in 'yyyy-mm-dd' format.
+     */
+    formatDateToTable(timestamp) {
+      const date = new Date(timestamp.seconds * 1000);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     /**
      * Confirms the deletion of a preventive.
      * @param {Object} item - The preventive item to be deleted.
@@ -183,9 +185,9 @@ export default {
      */
     async deletePreventivo(item) {
       try {
-        await preventivRepository.delete(item)
+        await preventivRepository.delete(item);
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
     },
     /**
@@ -193,9 +195,9 @@ export default {
      */
     async getPreventivos() {
       try {
-        this.prevents = await preventivRepository.getAll()
+        this.prevents = await preventivRepository.getAll();
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
     },
   },

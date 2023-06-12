@@ -5,28 +5,27 @@ export default {
 
     /**
      * Update a machine.
-     * @param {Object} machineData - The machine data to update.
+     * @param {Object} taskData - The machine data to update.
      * @returns {void}
      */
-    async upDate(machineData) {
+    async upDate(taskData) {
+      console.log("Los datos que voy a añadir son " + taskData)
       try {
-        const docRef = doc(db, COLLECTION_NAME, machineData.id);
-        await updateDoc(docRef, machineData);
-  
-        // Update UI or perform other actions
-      } catch (error) {
+        const docRef = doc(db, COLLECTION_NAME, taskData.id);
+        await updateDoc(docRef, taskData);
+        } catch (error) {
         console.error('Error updating machine: ', error);
       }
     },
   
     /**
      * Delete a machine.
-     * @param {Object} machineData - The machine data to delete.
+     * @param {Object} taskData - The machine data to delete.
      * @returns {void}
      */
-    async delete(machineData) {
+    async delete(taskData) {
       try {
-        const docRef = doc(db, COLLECTION_NAME, machineData.id);
+        const docRef = doc(db, COLLECTION_NAME, taskData.id);
         await deleteDoc(docRef);
   
         // Update UI or perform other actions
@@ -49,7 +48,6 @@ export default {
           machineData.id = doc.id;
           machines.push(machineData);
         });
-        console.log({machines})
 
         return machines;
       } catch (error) {
@@ -60,19 +58,17 @@ export default {
   
     /**
      * Add a new machine to the database.
-     * @param {Object} machineData - The machine data to add.
+     * @param {Object} taskData - The machine data to add.
      * @returns {void}
      */
-    async save(machineData) {
+    async save(taskData) {
       try {
         const querySnapshot = await getDocs(
-          query(collection(db, COLLECTION_NAME), where('name', '==', machineData.name))
+          query(collection(db, COLLECTION_NAME), where('name', '==', taskData.name))
         );
         if (querySnapshot.size === 0) {
-          await addDoc(collection(db, COLLECTION_NAME), machineData);
-  
-          // Update UI or perform other actions
-        } else {
+          await addDoc(collection(db, COLLECTION_NAME), taskData);
+          } else {
           console.log('Ya existe una máquina con el mismo machineCode');
         }
       } catch (error) {

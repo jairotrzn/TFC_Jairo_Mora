@@ -22,17 +22,6 @@
     <v-spacer></v-spacer>
 
     <v-icon color="black" @click="confirmLogOut()">mdi-logout</v-icon>
-
-    <v-dialog v-model="logoutDialogVisible" max-width="400">
-      <v-card>
-        <v-card-title class="headline">Confirmar cierre de sesión</v-card-title>
-        <v-card-text>¿Estás seguro de que deseas cerrar sesión?</v-card-text>
-        <v-card-actions>
-          <v-btn text @click="cancelLogout">Cancelar</v-btn>
-          <v-btn color="primary" @click="performLogout">Cerrar sesión</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-app-bar>
 </template>
 
@@ -42,7 +31,7 @@ export default {
   data() {
     return {
       phrases: [
-      { text: "La seguridad es lo primero", icon: "mdi-shield-check" },
+  { text: "La seguridad es lo primero", icon: "mdi-shield-check" },
   { text: "La seguridad en el trabajo es responsabilidad de todos", icon: "mdi-account-group-outline" },
   { text: "Trabaja de manera segura para regresar a casa sano y salvo", icon: "mdi-home-heart" },
   { text: "El conocimiento de la seguridad es la mejor protección", icon: "mdi-security" },
@@ -61,9 +50,19 @@ export default {
   { text: "La seguridad es el pilar fundamental de la eficiencia", icon: "mdi-pillar" },
   { text: "No comprometas tu seguridad por la comodidad", icon: "mdi-bed" },
   { text: "El trabajo seguro es el mejor trabajo que puedes hacer", icon: "mdi-thumb-up" },
-  { text: "La seguridad es el cimiento de una cultura laboral sólida", icon: "mdi-home-outline" }
-
-      ],
+  { text: "La seguridad es el cimiento de una cultura laboral sólida", icon: "mdi-home-outline" },
+  { text: "La seguridad es el reflejo de tu compromiso con el bienestar", icon: "mdi-account-heart" },
+  { text: "El éxito se construye sobre una base de seguridad", icon: "mdi-building" },
+  { text: "La seguridad es una inversión inteligente, no un gasto innecesario", icon: "mdi-currency-sign" },
+  { text: "La seguridad es un derecho que todos debemos proteger", icon: "mdi-hand-heart" },
+  { text: "El cuidado de tu seguridad es un acto de amor propio", icon: "mdi-heart" },
+  { text: "La seguridad es un hábito que te acompaña en cada tarea", icon: "mdi-hand-okay" },
+  { text: "La prevención es el escudo que te protege de los accidentes", icon: "mdi-shield" },
+  { text: "La seguridad laboral es el compromiso de todos los empleados", icon: "mdi-account-multiple-check" },
+  { text: "La seguridad es el cimiento de una carrera exitosa", icon: "mdi-trophy-outline" },
+  { text: "La seguridad es la base de la confianza en el lugar de trabajo", icon: "mdi-account-voice" },
+  { text: "El respeto por la seguridad es el primer paso hacia el éxito", icon: "mdi-handshake" }
+],
       currentPhrase: "",
       currentIcon: "",
       logoutDialogVisible: false,

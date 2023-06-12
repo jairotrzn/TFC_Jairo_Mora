@@ -140,7 +140,7 @@ export default {
         const tareasPreventivo = preventivoData.tareas || [];
   
         tareasPreventivo.forEach((tarea) => {
-          if (tarea.start !== "" && tarea.end !== "") {
+          if (tarea.start !== null && tarea.end !== null) {
             tareas.push(tarea);
           }
         });

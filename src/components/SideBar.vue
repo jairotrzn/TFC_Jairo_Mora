@@ -7,7 +7,8 @@
     mini-variant
     mini-variant-width="80"
   >  
-    <v-avatar class="d-block text-center mx-auto mt-4 mb-16" color="" size="40">
+    <v-avatar class="d-block text-center mx-auto mt-4 mb-16" color="" size="100">
+
     </v-avatar>
 
     <v-list flat class="mt-16" justify-center>

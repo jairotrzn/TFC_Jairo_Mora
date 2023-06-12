@@ -49,12 +49,7 @@ const routes = [
     component: () => import('../views/Averias'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/maquina',
-    name: 'maquina',
-    component: () => import('../views/Machine'),
-    meta: { requiresAuth: true }
-  }
+  
 ];
 
 const router = new VueRouter({
