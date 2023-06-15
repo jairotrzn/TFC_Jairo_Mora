@@ -91,11 +91,9 @@ export default {
       }
     },
     async performLogout() {
-      console.log("Voy a cerrar sesión");
       try {
         
         await signOut(auth);
-        console.log("Sesión cerrada");
         this.logoutDialogVisible = false;
         this.$router.push("/");
       } catch (err) {

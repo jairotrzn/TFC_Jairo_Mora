@@ -210,7 +210,8 @@ export default {
         state: Constants.PENDIENTE,
         password: Constants.DEFAULT,
         student: Constants.DEFAULT,
-        color: "#ecab0f"
+        color: "#ecab0f",
+        finish: false,
       };
 
       try {

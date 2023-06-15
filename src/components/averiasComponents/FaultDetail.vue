@@ -71,11 +71,12 @@
             ></v-text-field>
           </v-col>
           <v-col cols="12" md="4">
-            <v-select
+            <v-text-field
               v-model="itemRecibido.state"
               :items="states"
               label="Estado"
-            ></v-select>
+              required
+            ></v-text-field>
           </v-col>
         </v-row>
 
@@ -89,7 +90,7 @@
           shaped
         ></v-textarea>
         <v-textarea
-          v-model="itemRecibido.descriptionSolution"
+          v-model="itemRecibido.solution"
           label="Descripción de la solución"
           auto-grow
           outlined
@@ -98,9 +99,17 @@
           shaped
         ></v-textarea>
         <br />
-        <v-btn color="primary" class="mr-4" @click="confirmUpDate()"
-          >Guardar cambios</v-btn
-        >
+        <div class="d-flex justify-space-between">
+          <v-btn
+            @click="confirmFinisFault"
+            color="primary"
+            :disabled="itemRecibido.state === 'Finalizado'"
+          >
+            Finalizar Preventivo
+          </v-btn>
+          <v-btn @click="confirmUpDate()" color="primary">Actualizar</v-btn>
+        </div>
+       
         <br />
       </v-form>
     </v-container>
@@ -124,20 +133,9 @@ export default {
    */
   data() {
     return {
-      itemRecibido: {
-        namePersonInCharge: "",
-        machineCode: "",
-        start: "",
-        description: "",
-        accessCode: "",
-        state: "Pending",
-        student: "",
-        password: "",
-        color: "",
-        solution: "",
-      },
+      itemRecibido:null,
       machines: [],
-      states:["Pendiente","En Proceso","Finalizado"]
+      states: ["Pendiente", "En Proceso", "Finalizado"],
     };
   },
 
@@ -210,6 +208,36 @@ export default {
    * Component methods.
    */
   methods: {
+
+    confirmFinisFault(){
+      if (
+        confirm(
+          "Deseas finalizar la averia?"
+        )
+      ) {
+        this.finishFault(this.itemRecibido);
+      }
+    },
+    async finishFault(){
+      const faultData = {
+        namePersonInCharge: this.itemRecibido.namePersonInCharge,
+        machineCode: this.itemRecibido.machineCode,
+        start: new Date(this.formattedDateTextField),
+        end: new Date(this.formattedDateTextField),
+        description: this.itemRecibido.description,
+        accessCode: this.itemRecibido.accessCode,
+        state: "Finalizado",
+        student: this.itemRecibido.student,
+        password: this.itemRecibido.password,
+        color: this.itemRecibido.color,
+        solution: this.itemRecibido.solution,
+      };
+      try {
+        await faultRepository.upDate(faultData);
+      } catch (error) {
+        console.log(error);
+      }
+    },
     /**
      * Confirm the update action.
      */

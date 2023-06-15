@@ -172,6 +172,7 @@ export default {
         password: this.password,
         color:"#ff4040",
         solution:Constants.DEFAULT,
+        finish: false
       };
       try {
         await faultRepository.save(faultData);

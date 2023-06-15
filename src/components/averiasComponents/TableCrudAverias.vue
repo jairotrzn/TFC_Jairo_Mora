@@ -41,6 +41,9 @@
         <template v-slot:item.start="{ item }">
           {{ formatDateToTable(item.start) }}
         </template>
+        <template v-slot:item.state="{ item }">
+          <span :class="{'alert': item.finish && item.state === 'Pendiente'}">{{ item.state }}</span>
+        </template>
       </v-data-table>
       <FaultDetail />
 
@@ -162,5 +165,14 @@ export default {
 <style scoped>
 .disabled {
   opacity: 0.5;
+}
+.alert {
+  animation: blink 2s linear infinite;
+}
+
+@keyframes blink {
+  0% { background-color: inherit; }
+  50% { background-color: yellow; }
+  100% { background-color: inherit; }
 }
 </style>

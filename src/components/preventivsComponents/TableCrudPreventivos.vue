@@ -27,21 +27,22 @@
         :headers="headers"
         :items="prevents"
         :search="search"
-        @click:row="
-          (selectedTarea = $event),
-            sendItem(selectedTarea)((dialogPreventivDetail = true))
-        "
+        @click:row="(selectedTarea = $event), sendItem(selectedTarea)((dialogPreventivDetail = true))"
       >
         <template v-slot:item.actions="{ item }">
           <v-icon
             small
             class="mr-2"
             color="red"
-            @click="confirmDelete(item)" >mdi-delete</v-icon
+            @click="confirmDelete(item)"
+            >mdi-delete</v-icon
           >
         </template>
         <template v-slot:item.start="{ item }">
-          {{ formatDateToTable(item.start) }}
+          <span>{{ formatDateToTable(item.start) }}</span>
+        </template>
+        <template v-slot:item.state="{ item }">
+          <span :class="{'alert': item.finish && item.state === 'Pendiente'}">{{ item.state }}</span>
         </template>
       </v-data-table>
 
@@ -202,11 +203,16 @@ export default {
     },
   },
 };
-
 </script>
 
 <style scoped>
-.disabled {
-  opacity: 0.5;
+.alert {
+  animation: blink 2s linear infinite;
+}
+
+@keyframes blink {
+  0% { background-color: inherit; }
+  50% { background-color: yellow; }
+  100% { background-color: inherit; }
 }
 </style>
