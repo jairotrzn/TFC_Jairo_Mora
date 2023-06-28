@@ -81,11 +81,15 @@
               </template>
               <template v-else-if="selectedEvent.color === '#ecab0f'">
                 <p><b>Lista de tareas</b></p>
-                <span v-html="selectedEvent.tareas.name"></span>
+                <ul>
+                  <li v-for="tarea in selectedEvent.tareas" :key="tarea.name">
+                    {{ tarea.name }}
+                  </li>
+                </ul>
               </template>
               <template v-else-if="selectedEvent.color === '#90ffbb'">
                 <p><b>Información de Máquina</b></p>
-
+                <span v-html="selectedEvent.machineData"></span>
               </template>
               <template v-else>
                 <p><b>Otro color</b></p>
@@ -95,7 +99,6 @@
                 >
               </template>
             </v-card-text>
-
           </v-card>
         </v-menu>
       </v-sheet>

@@ -39,7 +39,7 @@ export default {
     VALUE_PROVEEDOR: "supplier",
     VALUE_START_DATE: "start",
     VALUE_STATE: "state",
-    VALUE_STUDENT: "machineCode.student",
+    VALUE_STUDENT: "student",
     VALUE_TYPE: "type",
     VELOCIDAD_MAXIMA: "Velocidad Máxima",
     VALUE_FRECUENCIA: "selectedFrencunce",
