@@ -45,15 +45,14 @@
     >
     
       <br />
-      <a href="https://iestubalcain.net/wordpress/" target="_blank" title="">
-  <v-icon color="white">fas fa-info-circle</v-icon>
-</a>    </div>
+  <v-icon color="white" @click="abrirPDF">fas fa-info-circle</v-icon>
+   </div>
   </v-navigation-drawer>
 </template>
 
 <script>
 import { VListItem } from "vuetify/lib";
-
+import myPDF from '@/assets/Manual.pdf'
 export default {
   data: () => ({
     selectedItem: null,
@@ -71,6 +70,11 @@ export default {
   components: {
     VListItem,
   },
+  methods:{
+    abrirPDF(){
+      window.open('../assets/Manual.9efd3ee4.pdf');
+    }
+  }
 };
 </script>
 

@@ -49,7 +49,6 @@ const routes = [
     component: () => import('../views/Averias'),
     meta: { requiresAuth: true }
   },
-  
 ];
 
 const router = new VueRouter({
