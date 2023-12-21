@@ -16,7 +16,7 @@
             fab
             dark
             color="indigo"
-            @click="(dialogCreatPreventivo = true), getMachines()"
+            @click="(dialogCreatPreventivo = true), getpreventivs()"
           >
             <v-icon dark>mdi-plus</v-icon>
           </v-btn>
@@ -78,7 +78,7 @@ export default {
       dialogPreventivDetail: false,
       search: "",
       dialogCreatPreventivo: false,
-      machines: [],
+      preventivs: [],
       selectedPreventiv: [],
       prevents: [],
       headers: [
@@ -88,7 +88,7 @@ export default {
           filterable: false,
           value: Constants.VALUE_ACCESS_CODE,
         },
-        { text: Constants.CODIGO_MAQUINA, value: Constants.VALUE_MACHINE_CODE },
+        { text: Constants.CODIGO_MAQUINA, value: Constants.VALUE_preventiv_CODE },
         { text: Constants.FECHA_INICIO, align: "center", value: Constants.VALUE_START_DATE },
         { text: Constants.ESTADO, align: "center", value: Constants.VALUE_STATE },
         { text: Constants.ACCIONES, align: "center", value: Constants.VALUE_ACTIONS },
@@ -117,11 +117,11 @@ export default {
       });
     },
     /**
-     * Checks if the machine code is invalid.
-     * @returns {string} - Error message if the machine code is invalid, empty string otherwise.
+     * Checks if the preventiv code is invalid.
+     * @returns {string} - Error message if the preventiv code is invalid, empty string otherwise.
      */
-    getMachineCodeError() {
-      if (this.machineCode && !this.machines.includes(this.machineCode)) {
+    getpreventivCodeError() {
+      if (this.preventivCode && !this.preventivs.includes(this.preventivCode)) {
         return Constants.OPCION_NO_DISPONIBLE;
       } else {
         return "";
@@ -134,7 +134,7 @@ export default {
     isFormIncomplete() {
       return (
         !this.namePersonInCharge ||
-        !this.machineCode ||
+        !this.preventivCode ||
         !this.startDate ||
         this.selectedPreventiv.length === 0
       );
@@ -195,13 +195,24 @@ export default {
      * Retrieves all preventives.
      */
     async getPreventivos() {
-      try {
-        this.prevents = await preventivRepository.getAll();
-      } catch (error) {
-        console.error(error);
+      try{
+        const callback = (snapshot) => {
+          const preventvsList = []; 
+          snapshot.forEach((doc) => {
+            const preventiv = doc.data(); 
+            preventiv.id = doc.id;
+            preventvsList.push(preventiv); 
+          });
+          this.prevents = preventvsList; 
+        };
+        const collectionRef = preventivRepository.getCollectionRef();
+        this.unsubscribe = preventivRepository.subscribeToCollection(collectionRef,callback);
+      }catch (error) {
+        console.log(error);
+        this.prevents = [];
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

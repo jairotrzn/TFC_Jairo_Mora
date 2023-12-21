@@ -82,7 +82,7 @@ export default {
           filterable: false,
           value: Constants.VALUE_ACCESS_CODE,
         },
-        { text: Constants.MACHINE_CODE, value: Constants.VALUE_MACHINE_CODE },
+        { text: Constants.fault_CODE, value: Constants.VALUE_fault_CODE },
         {
           text: Constants.FECHA_INICIO,
           align: "center",
@@ -152,10 +152,21 @@ export default {
      * Retrieves all faults from the database.
      */
     async getAll() {
-      try {
-        this.faults = await faultRepository.getAll();
-      } catch (error) {
+      try{
+        const callback = (snapshot) => {
+          const faultList = []; 
+          snapshot.forEach((doc) => {
+            const fault = doc.data(); 
+            fault.id = doc.id;
+            faultList.push(fault); 
+          });
+          this.faults = faultList; 
+        };
+        const collectionRef = faultRepository.getCollectionRef();
+        this.unsubscribe = faultRepository.subscribeToCollection(collectionRef,callback);
+      }catch (error) {
         console.log(error);
+        this.faults = [];
       }
     },
   },
