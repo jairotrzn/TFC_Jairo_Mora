@@ -1,17 +1,35 @@
-import  {db, collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc} from '@/repository/dataBase'
-const COLLECTION_NAME = 'repuestos';
+import {
+  db,
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  deleteDoc,
+  query,
+  where,
+  updateDoc,
+  onSnapshot,
+  ref,
+  storage,
+  deleteObject,
+} from "@/repository/dataBase";const COLLECTION_NAME = 'repuestos';
 export default {
-   
+  getCollectionRef() {
+    return collection(db, COLLECTION_NAME);
+  },
+  subscribeToCollection(collectionRef, callback) {
+    return onSnapshot(collectionRef, callback);
+  },
 
     /**
      * Update a machine.
-     * @param {Object} machineData - The machine data to update.
+     * @param {Object} repuestoData - The machine data to update.
      * @returns {void}
      */
-    async upDate(machineData) {
+    async upDate(repuestoData) {
       try {
-        const docRef = doc(db, COLLECTION_NAME, machineData.id);
-        await updateDoc(docRef, machineData);
+        const docRef = doc(db, COLLECTION_NAME, repuestoData.id);
+        await updateDoc(docRef, repuestoData);
   
         // Update UI or perform other actions
       } catch (error) {
@@ -21,12 +39,12 @@ export default {
   
     /**
      * Delete a machine.
-     * @param {Object} machineData - The machine data to delete.
+     * @param {Object} repuestoData - The machine data to delete.
      * @returns {void}
      */
-    async delete(machineData) {
+    async delete(repuestoData) {
       try {
-        const docRef = doc(db, COLLECTION_NAME, machineData.id);
+        const docRef = doc(db, COLLECTION_NAME, repuestoData.id);
         await deleteDoc(docRef);
   
         // Update UI or perform other actions
@@ -41,31 +59,38 @@ export default {
      */
     async getAll() {
       try {
-        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-        const machines = [];
-  
-        snapshot.forEach((doc) => {
-          let machineData = doc.data();
-          machineData.id = doc.id;
-          machines.push(machineData);
+        return new Promise((resolve, reject) => {
+          const unsubscribe = onSnapshot(
+            collection(db, COLLECTION_NAME),
+            (snapshot) => {
+              const repuestos = snapshot.docs.map((doc) => {
+                let repuestoData = doc.data();
+                repuestoData.id = doc.id;
+                return repuestoData;
+              });
+              resolve({ unsubscribe, repuestos });
+            },
+            (error) => {
+              console.log(error);
+              reject(error);
+            }
+          );
         });
-  
-        return machines;
       } catch (error) {
         console.log(error);
-        return [];
+        return { unsubscribe: null, repuestos: [] };
       }
     },
   
     /**
      * Add a new machine to the database.
-     * @param {Object} machineData - The machine data to add.
+     * @param {Object} repuestoData - The machine data to add.
      * @returns {void}
      */
-    async save(machineData) {
+    async save(repuestoData) {
       try {
    
-          await addDoc(collection(db, COLLECTION_NAME), machineData);
+          await addDoc(collection(db, COLLECTION_NAME), repuestoData);
      
       } catch (error) {
         console.log(error);

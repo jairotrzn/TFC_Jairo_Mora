@@ -230,8 +230,8 @@ export default {
   methods: {
     async getEvents() {
       try {
-        const preventivs = await preventivRepository.getAll();
-        const faults = await faultRepository.getAll();
+        const preventivs = await preventivRepository.getPreventivToCalendar();
+        const faults = await faultRepository.getFaultToCalendar();
         const futureTask = await preventivRepository.getPrevntivTask();
 
         this.events = [...faults, ...preventivs, ...futureTask].filter(
