@@ -199,7 +199,7 @@ export default {
       selectedRepuesto: [],
       search: "",
       dialogCreatTarea: false,
-      machines: [],
+      tasks: [],
       dialogUpDateTarea: false,
       dialogoConfirmDelete: false,
 
@@ -433,9 +433,23 @@ export default {
      */
     async getTareas() {
       try {
-        this.tareas = await taskRepository.getAll();
+        const callback = (snapshot) => {
+          const tastksList = [];
+          snapshot.forEach((doc) => {
+            const task = doc.data();
+            task.id = doc.id;
+            tastksList.push(task);
+          });
+          this.tareas = tastksList;
+        };
+        const collectionRef = taskRepository.getCollectionRef();
+        this.unsubscribe = taskRepository.subscribeToCollection(
+          collectionRef,
+          callback
+        );
       } catch (error) {
         console.log(error);
+        this.tareas = [];
       }
     },
 

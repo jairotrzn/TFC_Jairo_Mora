@@ -224,14 +224,24 @@ export default {
      * Retrieves the list of repuestos.
      * @returns {void}
      */
-    async getRepuestos() {
-      try {
-        this.repuestos = await repuestosRepository.getAll();
-      } catch (error) {
-        console.log(error);
-      }
-    },
-
+     async getRepuestos(){
+try{
+  const callback = (snapshot) => {
+    const repuestoList = []; 
+    snapshot.forEach((doc) => {
+      const repuesto = doc.data(); 
+      repuesto.id = doc.id;
+      repuestoList.push(repuesto); 
+    });
+    this.repuestos = repuestoList; 
+  };
+  const collectionRef = repuestosRepository.getCollectionRef();
+  this.unsubscribe = repuestosRepository.subscribeToCollection(collectionRef,callback);
+}catch (error) {
+  console.log(error);
+  this.repuestos = [];
+}
+},
     /**
      * Clears the form fields for creating a new repuesto.
      * @returns {void}

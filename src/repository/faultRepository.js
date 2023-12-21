@@ -1,7 +1,25 @@
-import  {db, collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc} from '@/repository/dataBase'
-const COLLECTION_NAME = 'averias';
+import {
+  db,
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  deleteDoc,
+  query,
+  where,
+  updateDoc,
+  onSnapshot,
+  ref,
+  storage,
+  deleteObject,
+} from "@/repository/dataBase";const COLLECTION_NAME = 'averias';
 export default {
-  
+  getCollectionRef() {
+    return collection(db, COLLECTION_NAME);
+  },
+  subscribeToCollection(collectionRef, callback) {
+    return onSnapshot(collectionRef, callback);
+  },
   async findByMachineCode(machineCode) {
         
     try {
@@ -66,19 +84,26 @@ async upDate(faultData) {
      */
     async getAll() {
       try {
-        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-        const faults = [];
-  
-        snapshot.forEach((doc) => {
-          let faultData = doc.data();
-          faultData.id = doc.id;
-          faults.push(faultData);
+        return new Promise((resolve, reject) => {
+          const unsubscribe = onSnapshot(
+            collection(db, COLLECTION_NAME),
+            (snapshot) => {
+              const notifications = snapshot.docs.map((doc) => {
+                let machineData = doc.data();
+                machineData.id = doc.id;
+                return machineData;
+              });
+              resolve({ unsubscribe, notifications });
+            },
+            (error) => {
+              console.log(error);
+              reject(error);
+            }
+          );
         });
-  
-        return faults;
       } catch (error) {
         console.log(error);
-        return [];
+        return { unsubscribe: null, notifications: [] };
       }
     },
   
@@ -93,6 +118,23 @@ async upDate(faultData) {
   
       } catch (error) {
         console.log(error);
+      }
+    },
+    async getFaultToCalendar() {
+      try {
+        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+        const machines = [];
+  
+        snapshot.forEach((doc) => {
+          let preventvData = doc.data();
+          preventvData.id = doc.id;
+          machines.push(preventvData);
+        });
+  
+        return machines;
+      } catch (error) {
+        console.log(error);
+        return [];
       }
     },
   };

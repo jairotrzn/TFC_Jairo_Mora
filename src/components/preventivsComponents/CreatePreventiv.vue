@@ -165,12 +165,25 @@ export default {
      * Fetches the list of tasks
      * @returns {void}
      */
-    async getTareas() {
+     async getTareas() {
       try {
-        this.tareas = await taskRepository.getAll();
-      
+        const callback = (snapshot) => {
+          const tastksList = [];
+          snapshot.forEach((doc) => {
+            const task = doc.data();
+            task.id = doc.id;
+            tastksList.push(task);
+          });
+          this.tareas = tastksList;
+        };
+        const collectionRef = taskRepository.getCollectionRef();
+        this.unsubscribe = taskRepository.subscribeToCollection(
+          collectionRef,
+          callback
+        );
       } catch (error) {
-        console.error(error);
+        console.log(error);
+        this.tareas = [];
       }
     },
 
@@ -186,13 +199,25 @@ export default {
      * Fetches the list of machines
      * @returns {void}
      */
-    async getMachines() {
-      try {
-        this.machines = await machineRepository.getAll();
-      } catch (error) {
-        console.error(error);
-      }
-    },
+     async getMachines(){
+
+try{
+  const callback = (snapshot) => {
+    const machineList = []; 
+    snapshot.forEach((doc) => {
+      const machine = doc.data(); 
+      machine.id = doc.id;
+      machineList.push(machine); 
+    });
+    this.machines = machineList; 
+  };
+  const collectionRef = machineRepository.getCollectionRef();
+  this.unsubscribe = machineRepository.subscribeToCollection(collectionRef,callback);
+}catch (error) {
+  console.log(error);
+  this.machines = [];
+}
+},
 
     /**
      * Adds a new preventive
