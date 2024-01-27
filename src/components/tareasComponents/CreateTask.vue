@@ -81,13 +81,6 @@
           <v-col cols="12">
             <v-card>
               <h4>Lista de repuestos necesarios</h4>
-              <v-text-field
-                v-model="searchRepuestos"
-                append-icon="mdi-magnify"
-                label="Buscar"
-                single-line
-                hide-details
-              ></v-text-field>
               <v-data-table
                 v-model="selectedRepuesto"
                 :headers="headersTablaRepuestos"
@@ -251,13 +244,20 @@ export default {
 
       } 
       try {
-        console.log("Voy a guardar")
       await taskRepository.save(tastkDate)
+      this.resetForm();
 
         this.$emit("taskCreated");
       } catch (error) {
         console.log(error);
       }
+    },
+    resetForm() {
+      this.nameTarea = "";
+      this.category = "";
+      this.selectedFrencunce = "";
+      this.datos = [];
+      this.selectedRepuesto = [];
     },
   },
 };

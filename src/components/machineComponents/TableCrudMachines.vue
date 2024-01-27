@@ -83,12 +83,22 @@
           <v-form>
             <p><b>CARACTERISTICAS TÉCNICAS</b></p>
             <v-row>
+              <v-col cols="4">
+            <img :src="imageConvert" alt="Imagen" style="width: 200px; height: auto;">
+            <v-file-input
+          v-model="image"
+          accept="image/*"
+          label="Modificar Imagen"
+          @change="convertToBinary"
+        ></v-file-input>
+          </v-col>
               <v-col cols="6">
                 <v-text-field
                   type="text"
                   label="Agregar Tipo de maquina"
                   v-model="selectedMachine.type"
                 ></v-text-field>
+                
               </v-col>
               <v-col cols="6">
                 <v-text-field
@@ -291,9 +301,8 @@ export default {
       machines: [],
       dialogUpdate: false,
       typeErrors: [],
-
+      imageConvert: null,
       binaryData: null,
-
       selectedMachine: [],
       item: null,
       formulario: false,
@@ -344,6 +353,8 @@ export default {
    */
   created() {
     this.getMachines();
+    eventBus.$on("item-selected", this.procesarItem);
+
   },
   computed: {
     areAllFieldsFilled() {
@@ -379,6 +390,24 @@ export default {
   },
 
   methods: {
+    procesarItem(item) {
+      this.itemRecibido = item;
+      this.originalItem = JSON.parse(JSON.stringify(item));
+      this.isReadOnly = true;
+      this.hasChanges = false;
+      this.convertBinaryToImage(item.image);
+
+    },
+    convertBinaryToImage(binaryData) {
+      const binaryString = atob(binaryData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes.buffer], { type: 'image/jpeg' });
+      const imageUrl = URL.createObjectURL(blob);
+      this.imageConvert = imageUrl;
+    },
     /**
      * Handles the event when a new fault is created.
      */

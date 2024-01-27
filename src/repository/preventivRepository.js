@@ -143,7 +143,6 @@ export default {
           if (tarea.start !== null && tarea.end !== null) {
             tarea.namePersonInCharge = preventivoData.namePersonInCharge
             tarea.machineData = preventivoData.machineCode.machineCode
-            console.log(tarea)
             tareas.push(tarea);
           }
         });

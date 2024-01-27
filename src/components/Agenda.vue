@@ -89,8 +89,8 @@
               </template>
               <template v-else-if="selectedEvent.color === '#90ffbb'">
                 <p><b>Información de Máquina</b></p>
-                <span v-html="selectedEvent.machineData"></span>
-              </template>
+  <span v-html="selectedEvent.machineData"></span>
+</template>
               <template v-else>
                 <p><b>Otro color</b></p>
                 <span
@@ -228,13 +228,58 @@ export default {
   },
 
   methods: {
+    async confirmEliminar() {
+    if (confirm("¿Deseas Generar un Preventivo?")) {
+      // Agregar lógica para crear un nuevo evento preventivo con los datos necesarios
+      const newPreventivoData = {
+        name: this.selectedEvent.machineCode.machineCode + " " + this.selectedEvent.machineCode.type,
+        namePersonInCharge: this.selectedEvent.namePersonInCharge,
+        machineCode: this.selectedEvent.machineCode,
+        tareas: [this.selectedEvent.tareas.find(tarea => tarea.name === this.selectedEvent.name)],
+        start: new Date()+7,
+        end: new Date(),
+        accessCode: this.generateUniqueId(),
+        state: Constants.PENDIENTE,
+        password: Constants.DEFAULT,
+        student: Constants.DEFAULT,
+        color: "#ecab0f",
+        finish: false,
+      };
+
+      try {
+        await preventivRepository.save(newPreventivoData);
+        this.$emit("preventivCreated");
+        // Aquí puedes añadir lógica adicional después de generar el nuevo preventivo
+      } catch (error) {
+        console.log(error);
+      }
+
+      // Puedes eliminar el evento original si es necesario
+      // ...
+
+      // Actualizar la lista de eventos
+      this.getEvents();
+    }
+  },
+
+    /**
+     * Realizar alguna acción al generar.
+     */
+     generarPreventivo() {
+      // Lógica para posponer el evento, por ejemplo, incrementar la fecha
+      if (this.selectedEvent) {
+        // Supongamos que quieres posponerlo por un día
+        const nuevaFecha = new Date(this.selectedEvent.start);
+        nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+        this.selectedEvent.start = nuevaFecha;
+        // También podrías hacer otras modificaciones necesarias
+      }
+    },
     async getEvents() {
       try {
         const preventivs = await preventivRepository.getAll();
         const faults = await faultRepository.getAll();
-        const futureTask = await preventivRepository.getPrevntivTask();
-
-        this.events = [...faults, ...preventivs, ...futureTask].filter(
+        this.events = [...faults, ...preventivs].filter(
           (event) => event.state === "Pendiente"
         );
 
