@@ -280,6 +280,7 @@ export default {
         const preventivs = await preventivRepository.getAll();
         const faults = await faultRepository.getAll();
         this.events = [...faults, ...preventivs].filter(
+
           (event) => event.state === "Pendiente"
         );
 

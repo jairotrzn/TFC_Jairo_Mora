@@ -514,15 +514,24 @@ export default {
         console.log(error);
       }
     },
-    /**
-     * Retrieve the list of machines from the database.
-     * @returns {void}
-     */
-    async getMachines() {
-      try {
-        this.machines = await machineRepository.getAll();
-      } catch (error) {
+
+    async getMachines(){
+
+      try{
+        const callback = (snapshot) => {
+          const machineList = []; 
+          snapshot.forEach((doc) => {
+            const machine = doc.data(); 
+            machine.id = doc.id;
+            machineList.push(machine); 
+          });
+          this.machines = machineList; 
+        };
+        const collectionRef = machineRepository.getCollectionRef();
+        this.unsubscribe = machineRepository.subscribeToCollection(collectionRef,callback);
+      }catch (error) {
         console.log(error);
+        this.machines = [];
       }
     },
     /**

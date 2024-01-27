@@ -1,8 +1,26 @@
-import  {db, collection, getDocs, addDoc, doc, deleteDoc, query, where ,updateDoc} from '@/repository/dataBase'
-const COLLECTION_NAME = 'tareas';
+import {
+  db,
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  deleteDoc,
+  query,
+  where,
+  updateDoc,
+  onSnapshot,
+  ref,
+  storage,
+  deleteObject,
+} from "@/repository/dataBase";const COLLECTION_NAME = 'tareas';
 export default {
    
-
+  getCollectionRef() {
+    return collection(db, COLLECTION_NAME);
+  },
+  subscribeToCollection(collectionRef, callback) {
+    return onSnapshot(collectionRef, callback);
+  },
     /**
      * Update a machine.
      * @param {Object} taskData - The machine data to update.
@@ -40,19 +58,26 @@ export default {
      */
     async getAll() {
       try {
-        const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-        const machines = [];
-  
-        snapshot.forEach((doc) => {
-          let machineData = doc.data();
-          machineData.id = doc.id;
-          machines.push(machineData);
+        return new Promise((resolve, reject) => {
+          const unsubscribe = onSnapshot(
+            collection(db, COLLECTION_NAME),
+            (snapshot) => {
+              const tastks = snapshot.docs.map((doc) => {
+                let tastkdata = doc.data();
+                tastkdata.id = doc.id;
+                return tastkdata;
+              });
+              resolve({ unsubscribe, tastks });
+            },
+            (error) => {
+              console.log(error);
+              reject(error);
+            }
+          );
         });
-
-        return machines;
       } catch (error) {
         console.log(error);
-        return [];
+        return { unsubscribe: null, tastks: [] };
       }
     },
   

@@ -8,30 +8,42 @@ import {
   query,
   where,
   updateDoc,
+  onSnapshot,
+  ref,
+  storage,
+  deleteObject,
 } from "@/repository/dataBase";
 const COLLECTION_NAME = "preventivos";
 export default {
+  getCollectionRef() {
+    return collection(db, COLLECTION_NAME);
+  },
+  subscribeToCollection(collectionRef, callback) {
+    return onSnapshot(collectionRef, callback);
+  },
 
-        async findByMachineCode(machineCode) {
-        
-        try {
-          const snapshot = await getDocs(
-            query(collection(db, COLLECTION_NAME), where("machineCode.machineCode", "==", machineCode))
-          );
-          const preventivsDb = [];
-  
-          snapshot.forEach((doc) => {
-            let preventivData = doc.data();
-            preventivData.id = doc.id;
-            preventivsDb.push(preventivData);
-          });
-  
-        return preventivsDb;
-        } catch (error) {
-          console.log(error);
-          return []
-        }
-      },
+  async findByMachineCode(machineCode) {
+    try {
+      const snapshot = await getDocs(
+        query(
+          collection(db, COLLECTION_NAME),
+          where("machineCode.machineCode", "==", machineCode)
+        )
+      );
+      const preventivsDb = [];
+
+      snapshot.forEach((doc) => {
+        let preventivData = doc.data();
+        preventivData.id = doc.id;
+        preventivsDb.push(preventivData);
+      });
+
+      return preventivsDb;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  },
   /**
    * Update a machine.
    * @param {Object} preventvData - The machine data to update.
@@ -40,18 +52,24 @@ export default {
   async upDate(faultData) {
     try {
       const collectionRef = collection(db, COLLECTION_NAME);
-      const querySnapshot = await getDocs(query(collectionRef, where("accessCode", "==", faultData.accessCode)));
-      
+      const querySnapshot = await getDocs(
+        query(collectionRef, where("accessCode", "==", faultData.accessCode))
+      );
+
       if (querySnapshot.size === 1) {
         const docRef = doc(collectionRef, querySnapshot.docs[0].id);
         await updateDoc(docRef, faultData);
       } else if (querySnapshot.size === 0) {
-        console.log("No se encontró ningún documento con el accessCode proporcionado.");
+        console.log(
+          "No se encontró ningún documento con el accessCode proporcionado."
+        );
       } else {
-        console.log("Se encontraron múltiples documentos con el mismo accessCode.");
+        console.log(
+          "Se encontraron múltiples documentos con el mismo accessCode."
+        );
       }
     } catch (error) {
-      console.error('Error updating machine: ', error);
+      console.error("Error updating machine: ", error);
     }
   },
 
@@ -61,7 +79,6 @@ export default {
    * @returns {void}
    */
   async delete(preventvData) {
-
     try {
       const docRef = doc(db, COLLECTION_NAME, preventvData.id);
       await deleteDoc(docRef);
@@ -78,19 +95,26 @@ export default {
    */
   async getAll() {
     try {
-      const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-      const machines = [];
-
-      snapshot.forEach((doc) => {
-        let preventvData = doc.data();
-        preventvData.id = doc.id;
-        machines.push(preventvData);
+      return new Promise((resolve, reject) => {
+        const unsubscribe = onSnapshot(
+          collection(db, COLLECTION_NAME),
+          (snapshot) => {
+            const preventivs = snapshot.docs.map((doc) => {
+              let preventivData = doc.data();
+              preventivData.id = doc.id;
+              return preventivData;
+            });
+            resolve({ unsubscribe, preventivs });
+          },
+          (error) => {
+            console.log(error);
+            reject(error);
+          }
+        );
       });
-
-      return machines;
     } catch (error) {
       console.log(error);
-      return [];
+      return { unsubscribe: null, preventivs: [] };
     }
   },
 
@@ -134,21 +158,39 @@ export default {
     try {
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
       const tareas = [];
-  
+
       snapshot.forEach((doc) => {
         const preventivoData = doc.data();
         const tareasPreventivo = preventivoData.tareas || [];
-  
+
         tareasPreventivo.forEach((tarea) => {
           if (tarea.start !== null && tarea.end !== null) {
             tarea.namePersonInCharge = preventivoData.namePersonInCharge
             tarea.machineData = preventivoData.machineCode.machineCode
+
             tareas.push(tarea);
           }
         });
       });
-  
+
       return tareas;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  },
+  async getPreventivToCalendar() {
+    try {
+      const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+      const machines = [];
+
+      snapshot.forEach((doc) => {
+        let preventvData = doc.data();
+        preventvData.id = doc.id;
+        machines.push(preventvData);
+      });
+
+      return machines;
     } catch (error) {
       console.log(error);
       return [];
