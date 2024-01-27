@@ -154,9 +154,13 @@
           </v-list>
         </v-card>
         <div class="d-flex justify-space-between">
-          <v-btn @click="confirmFinisPreventiv" color="primary" :disabled="itemRecibido.state === 'Finalizado'">
-  Finalizar Preventivo
-</v-btn>
+          <v-btn
+            @click="confirmFinisPreventiv"
+            color="primary"
+            :disabled="itemRecibido.state === 'Finalizado'"
+          >
+            Finalizar Preventivo
+          </v-btn>
           <v-btn @click="confirmUpdate" color="primary">Actualizar</v-btn>
         </div>
       </v-container>
@@ -168,6 +172,7 @@
 import eventBus from "@/config/eventBus";
 import preventivRepository from "@/repository/preventivRepository";
 import Constants from "@/assets/Constants";
+import { v4 as uuidv4 } from "uuid";
 
 export default {
   data() {
@@ -286,66 +291,115 @@ export default {
       this.hasChanges = false;
     },
 
-/**
- * Calculates the start date based on the frequency.
- * @param {string} frequency - The frequency of the task ("Diaria", "Semanal", "Quincenal", "Mensual").
- * @returns {Date} - The calculated start date.
- */
- calculateStartDate(frequency) {
-  const currentDate = new Date();
-  
-  if (frequency === "Diaria") {
-    return currentDate;
-  } else if (frequency === "Semanal") {
-    currentDate.setDate(currentDate.getDate() + 7);
-    return currentDate;
-  } else if (frequency === "Quincenal") {
-    currentDate.setDate(currentDate.getDate() + 14);
-    return currentDate;
-  } else if (frequency === "Mensual") {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    return currentDate;
-  }
-  
-  // If the frequency doesn't match any of the options above, return the current date
-  return currentDate;
-},
+    /**
+     * Calculates the start date based on the frequency.
+     * @param {string} frequency - The frequency of the task ("Diaria", "Semanal", "Quincenal", "Mensual").
+     * @returns {Date} - The calculated start date.
+     */
+    calculateStartDate(frequency) {
+      const currentDate = new Date();
 
-/**
- * Updates the preventive task.
- * @returns {Promise<void>}
- */
-async updatePreventivTask() {
-  const tareas = this.itemRecibido.tareas;
+      if (frequency === "Diaria") {
+        return currentDate;
+      } else if (frequency === "Semanal") {
+        currentDate.setDate(currentDate.getDate() + 7);
+        return currentDate;
+      } else if (frequency === "Quincenal") {
+        currentDate.setDate(currentDate.getDate() + 14);
+        return currentDate;
+      } else if (frequency === "Mensual") {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        return currentDate;
+      }
 
-  tareas.forEach((tarea) => {
-    const frequency = tarea.selectedFrencunce;
-    tarea.start = this.calculateStartDate(frequency);
-    tarea.end = this.calculateStartDate(frequency);
-    tarea.description = this.itemRecibido.machineCode.machineCode;
-  });
+      // If the frequency doesn't match any of the options above, return the current date
+      return currentDate;
+    },
 
-  try {
-    const preventData = {
-      namePersonInCharge: this.itemRecibido.namePersonInCharge,
-      accessCode: this.itemRecibido.accessCode,
-      student: this.itemRecibido.student,
-      password: this.itemRecibido.password,
-      start: new Date(this.formattedDateTextField),
-      state: "Finalizado",
-      machineCode: this.itemRecibido.machineCode,
-      tareas: tareas,
-    };
+    /**
+     * Updates the preventive task.
+     * @returns {Promise<void>}
+     */
+    async updatePreventivTask() {
+      const tareas = this.itemRecibido.tareas;
 
-    await preventivRepository.upDate(preventData);
-  } catch (error) {
-    console.error(error);
-  }
+      tareas.forEach((tarea) => {
+        const tareaActual = {
+          name: tarea.name,
+          category: tarea.category,
+          selectedFrencunce: tarea.selectedFrencunce,
+          datos: tarea.datos,
+          repuestos: tarea.repuestos,
+          state: "Pendiente",
+          lastDate: "",
+          color: "#90ffbb",
+          selectedFrencunce: tarea.selectedFrencunce,
+          start: this.calculateStartDate(tarea.selectedFrencunce),
+          end: this.calculateStartDate(tarea.selectedFrencunce),
+          description: this.itemRecibido.machineCode.machineCode,
+        };
 
-  eventBus.$emit("changes-saved");
-  this.isReadOnly = true;
-  this.hasChanges = false;
-},
+        const preventData = {
+          name:
+            this.itemRecibido.machineCode.machineCode +
+            " " +
+            this.itemRecibido.machineCode.type,
+          machineCode: this.machineCode,
+          namePersonInCharge: this.itemRecibido.namePersonInCharge,
+          accessCode: this.generateUniqueId(),
+          student: this.itemRecibido.student,
+          password: this.itemRecibido.password,
+          start: tareaActual.start,
+          end: tareaActual.end,
+          state: Constants.PENDIENTE,
+          password: Constants.DEFAULT,
+          student: Constants.DEFAULT,
+          machineCode: this.itemRecibido.machineCode,
+          color: "#ecab0f",
+          finish: false,
+          tareas: [tareaActual],
+        };
+       this.createNewPreventifToTask(preventData);
+      });
+
+      try {
+        const preventData = {
+          namePersonInCharge: this.itemRecibido.namePersonInCharge,
+          accessCode: this.itemRecibido.accessCode,
+          student: this.itemRecibido.student,
+          password: this.itemRecibido.password,
+          start: new Date(this.formattedDateTextField),
+          state: "Finalizado",
+          machineCode: this.itemRecibido.machineCode,
+          tareas: tareas,
+        };
+
+        await preventivRepository.upDate(preventData);
+      } catch (error) {
+        console.error(error);
+      }
+
+      eventBus.$emit("changes-saved");
+      this.isReadOnly = true;
+      this.hasChanges = false;
+    },
+
+    async createNewPreventifToTask(preventData) {
+      try {
+        await preventivRepository.save(preventData);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    /**
+     * Generates a unique ID
+     * @returns {String} - Unique ID
+     */
+    generateUniqueId() {
+      const uniqueId = uuidv4();
+      return uniqueId.substr(0, 6);
+    },
 
     /**
      * Updates the item

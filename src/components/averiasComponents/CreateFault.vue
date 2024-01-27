@@ -46,6 +46,33 @@
           row-height="25"
           shaped
         ></v-textarea>
+        <v-card>
+              <h4>Lista de repuestos necesarios</h4>
+              <v-data-table
+                v-model="selectedRepuesto"
+                :headers="headersTablaRepuestos"
+                :items="repuestosDB"
+                :single-select="singleSelect"
+                item-key="id"
+                show-select
+                class="elevation-1"
+                @input="updateSelectedItems"
+              >
+                <template v-slot:top>
+                  <v-toolbar flat>
+                    <v-toolbar-title>Repuestos</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="search"
+                      append-icon="mdi-magnify"
+                      label="Buscar"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-toolbar>
+                </template>
+              </v-data-table>
+            </v-card>
 
         <br />
         <v-btn
@@ -70,6 +97,8 @@ import { v4 as uuidv4 } from "uuid";
 import faultRepository from "@/repository/faultRepository";
 import machineRepository from '@/repository/machineRepository'
 import Constants from '@/assets/Constants'
+import  repuestosRepository from '@/repository/repuestosRepository'
+
 export default {
   /**
    * Datos del componente.
@@ -83,6 +112,19 @@ export default {
       namePersonInCharge: "", // Nombre de la persona responsable
       state: Constants.PENDIENTE, // Estado de la tarea
       password: "", // Contraseña para la tarea
+      selectedRepuesto: [],
+      repuestosDB: [],
+      headersTablaRepuestos: [
+        {
+          text: "Identificador",
+          align: "start",
+          filterable: false,
+          value: "idRepuesto",
+        },
+        { text: "Nombre", value: "name" },
+        { text: "Precio €", align: "center", value: "price" },
+        { text: "Proveedor", align: "center", value: "supplier" },
+      ],
     };
   },
 
@@ -91,12 +133,27 @@ export default {
    */
   created() {
     this.getMachines();
+    this.getRepuestos();
+
   },
 
   /**
    * Propiedades computadas.
    */
   computed: {
+    /**
+     * Filters the repuestos based on the search term.
+     * @returns {Array} - Filtered repuestos
+     */
+     filteredRepuestos() {
+      return this.repuestosDB.filter((repuesto) => {
+        const searchTerm = this.search.toLowerCase();
+        return (
+          repuesto.nameRepuesto.toLowerCase().includes(searchTerm) ||
+          repuesto.idRepuesto.toLowerCase().includes(searchTerm)
+        );
+      });
+    },
     /**
      * Obtener el mensaje de error para el código de máquina.
      * @returns {string} El mensaje de error si el código de máquina no es válido, cadena vacía en caso contrario.
@@ -124,7 +181,25 @@ export default {
    * Métodos del componente.
    */
   methods: {
+     /**
+     * Updates the selectedRepuesto array based on the selection state of repuestosDB items.
+     * @returns {void}
+     */
+     updateSelectedItems() {
+      this.selectedRepuestos = this.repuestosDB.filter((item) => item.isSelected);
+    },
+  /**
+     * Retrieves the list of repuestos from the database.
+     * @returns {void}
+     */
+     async getRepuestos() {
 
+try {
+  this.repuestosDB = await repuestosRepository.getAll()
+} catch (error) {
+  console.log(error)
+}
+},
     /**
      * Validar el formulario.
      */
@@ -172,7 +247,8 @@ export default {
         password: this.password,
         color:"#ff4040",
         solution:Constants.DEFAULT,
-        finish: false
+        finish: false,
+        repuestos: this.selectedRepuesto
       };
       try {
         await faultRepository.save(faultData);
@@ -192,6 +268,7 @@ export default {
       this.machineCode = Constants.DEFAULT;
       this.startDate = Constants.DEFAULT;
       this.descriptionDefault = Constants.DEFAULT;
+      this.selectedRepuesto = []
     },
     formatDate(fecha) {
       const fechaCompleta = fecha + "T00:00:00.000Z";
