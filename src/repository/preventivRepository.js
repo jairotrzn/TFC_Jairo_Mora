@@ -165,9 +165,9 @@ export default {
 
         tareasPreventivo.forEach((tarea) => {
           if (tarea.start !== null && tarea.end !== null) {
-            tarea.namePersonInCharge = preventivoData.namePersonInCharge;
-            tarea.preventivData = preventivoData.machineCode.machineCode;
-            console.log(tarea);
+            tarea.namePersonInCharge = preventivoData.namePersonInCharge
+            tarea.machineData = preventivoData.machineCode.machineCode
+
             tareas.push(tarea);
           }
         });

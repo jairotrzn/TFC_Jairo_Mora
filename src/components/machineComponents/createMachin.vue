@@ -243,23 +243,32 @@
                   'El avance minimo vertical debe ser igual o mayor que 0',
               ]"
             ></v-text-field>
+            <v-col cols="12" md="5">
+            <v-img :src="image" v-if="image" class="mt-4" height="auto" max-width="50%"></v-img>
+          </v-col>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-file-input
+              accept="image/*"
+              label="Añadir Imagen"
+              ref="fileInput"
+              :clearable="false"
+              @change="previewImage"
+            ></v-file-input>
 
-        <v-file-input
-          v-model="image"
-          accept="image/*"
-          label="Agregar una imagen"
-          @change="convertToBinary"
-        ></v-file-input>
+          </v-col>
+      
+        </v-row>
+
         <v-btn
           type="submit"
           color="primary"
           class="mr-4"
           @click.stop="dialog = false"
           :disabled="!areAllFieldsFilled"
-          >Agregar</v-btn
-        >
+        >Agregar</v-btn>
       </v-form>
     </v-container>
   </v-card>
@@ -275,7 +284,10 @@ import eventBus from "@/config/eventBus";
 import MachineDetail from "@/components/machineComponents/machineDetails.vue";
 import tablePreventivMachineDetail from "@/components/machineComponents/tablePreventivMachineDetail.vue";
 import machineRepository from "@/repository/machineRepository";
-import Constants from '@/assets/Constants'
+import Constants from "@/assets/Constants";
+
+import { getStorage, ref, uploadBytes,getDownloadURL } from "@/config/firebaseConfig";
+
 export default {
   /**
    * Component data.
@@ -291,7 +303,7 @@ export default {
       machines: [],
       dialogUpdate: false,
       typeErrors: [],
-
+      machineImage:"",
       binaryData: "",
 
       selectedMachine: [],
@@ -319,9 +331,6 @@ export default {
       minimumTransversalFeed: "",
       minimumVerticalFeed: "",
 
-
-      
-
       headers: [
         {
           text: Constants.MACHINE_CODE,
@@ -329,15 +338,23 @@ export default {
           filterable: false,
           value: Constants.VALUE_MACHINE_CODE,
         },
-        { text:  Constants.TIPO, value:  Constants.VALUE_TYPE },
-        { text:  Constants.LOCALIZACION, align: "center", value:  Constants.VALUE_LOCATION },
+        { text: Constants.TIPO, value: Constants.VALUE_TYPE },
         {
-          text:  Constants.POTENCIA_MOTOR_PRINCIPAL,
+          text: Constants.LOCALIZACION,
+          align: "center",
+          value: Constants.VALUE_LOCATION,
+        },
+        {
+          text: Constants.POTENCIA_MOTOR_PRINCIPAL,
           align: "center",
           value: Constants.VALUE_MAIN_MOTOR_POWER,
         },
-        { text:  Constants.VELOCIDAD_MAXIMA, align: "center", value:  Constants.VALUE_MAXIMUM_SPEED },
-        { text:  Constants.ACCIONES, value:  Constants.VALUE_ACTIONS },
+        {
+          text: Constants.VELOCIDAD_MAXIMA,
+          align: "center",
+          value: Constants.VALUE_MAXIMUM_SPEED,
+        },
+        { text: Constants.ACCIONES, value: Constants.VALUE_ACTIONS },
       ],
     };
   },
@@ -379,27 +396,26 @@ export default {
     tablePreventivMachineDetail,
   },
   methods: {
+    async previewImage(file) {
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      this.image = reader.result;
+    };
+
+    if (this.image === '') {
+      reader.readAsDataURL(file);
+    } else {
+      this.clearImage();
+    }
+  }
+},
+clearImage() {
+    this.image = '';
+  },
     sendItem(item) {
       eventBus.$emit("item-selected", item);
-    },
-    /**
-     * Convert the selected image to binary.
-     * @returns {void}
-     */
-    convertToBinary() {
-      const file = this.image;
-
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const binary = reader.result;
-          const binaryString = btoa(
-            String.fromCharCode(...new Uint8Array(binary))
-          );
-          this.binaryData = binaryString;
-        };
-        reader.readAsArrayBuffer(file);
-      }
     },
     /**
      * Update a machine.
@@ -485,14 +501,32 @@ export default {
       this.minimumTransversalFeed = null;
       this.minimumVerticalFeed = null;
     },
+    async uploadImage() {
+      console.log("Voy a guardar la imagen")
+      const file = this.image;
+      const imageName = `${Date.now()}_${file}`;
+      console.log("El nombre es " + imageName)
+      const storageRef = ref(getStorage,'machines/'+ 'imageName');
+
+      try {
+        await uploadBytes(storageRef, file);
+        this.machineImage = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.log(error);
+        this.machineImage = "";
+      }
+    },
     /**
      * Add a new machine to the database.
      * @returns {void}
      */
     async addMachine() {
+      if(this.image != ""){
+        await this.uploadImage();
+      }
       try {
         const machineData = {
-          image: this.binaryData,
+          image: this.machineImage,
           type: this.type,
           location: this.location,
           machineCode: this.machineCode,
@@ -515,10 +549,9 @@ export default {
           minimumVerticalFeed: +this.minimumVerticalFeed,
         };
 
-        await machineRepository.save(machineData);
+       await machineRepository.save(machineData);
         this.inizialite();
         this.$emit("machineCreated");
-
       } catch (error) {
         console.log(error);
       }

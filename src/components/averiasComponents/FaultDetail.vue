@@ -98,6 +98,13 @@
           row-height="25"
           shaped
         ></v-textarea>
+    
+        <h3><v-icon>mdi-tools</v-icon> Repuestos</h3>
+        <ul>
+          <li v-for="(repuesto, index) in itemRecibido.repuestos" :key="index" class="slide-up">
+            {{ repuesto.idRepuesto }} - {{ repuesto.name }}
+          </li>
+        </ul>
         <br />
         <div class="d-flex justify-space-between">
           <v-btn

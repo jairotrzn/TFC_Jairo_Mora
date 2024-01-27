@@ -88,14 +88,7 @@ export default {
      */
     async save(taskData) {
       try {
-        const querySnapshot = await getDocs(
-          query(collection(db, COLLECTION_NAME), where('name', '==', taskData.name))
-        );
-        if (querySnapshot.size === 0) {
           await addDoc(collection(db, COLLECTION_NAME), taskData);
-          } else {
-          console.log('Ya existe una máquina con el mismo machineCode');
-        }
       } catch (error) {
         console.log(error);
       }
