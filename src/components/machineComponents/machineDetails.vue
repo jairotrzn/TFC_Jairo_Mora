@@ -6,7 +6,7 @@
 
         <v-row>
           <v-col cols="4">
-            <img :src="imageConvert" alt="Imagen" style="width: 200px; height: auto;">
+            <img :src="itemRecibido.image" alt="Imagen" style="width: 200px; height: auto;">
           </v-col>
           <v-col cols="4">
             <v-text-field
