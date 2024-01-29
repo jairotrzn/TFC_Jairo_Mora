@@ -244,22 +244,27 @@
               ]"
             ></v-text-field>
             <v-col cols="12" md="5">
-            <v-img :src="image" v-if="image" class="mt-4" height="auto" max-width="50%"></v-img>
-          </v-col>
+              <v-img
+                :src="image"
+                v-if="image"
+                class="mt-4"
+                height="auto"
+                max-width="50%"
+              ></v-img>
+            </v-col>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" md="6">
             <v-file-input
               accept="image/*"
+              v-model="fileImage"
               label="Añadir Imagen"
               ref="fileInput"
               :clearable="false"
-              @change="previewImage"
-            ></v-file-input>
-
+            ></v-file-input
+            >>
           </v-col>
-      
         </v-row>
 
         <v-btn
@@ -268,7 +273,8 @@
           class="mr-4"
           @click.stop="dialog = false"
           :disabled="!areAllFieldsFilled"
-        >Agregar</v-btn>
+          >Agregar</v-btn
+        >
       </v-form>
     </v-container>
   </v-card>
@@ -286,7 +292,12 @@ import tablePreventivMachineDetail from "@/components/machineComponents/tablePre
 import machineRepository from "@/repository/machineRepository";
 import Constants from "@/assets/Constants";
 
-import { getStorage, ref, uploadBytes,getDownloadURL } from "@/config/firebaseConfig";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "@/config/firebaseConfig";
 
 export default {
   /**
@@ -303,8 +314,11 @@ export default {
       machines: [],
       dialogUpdate: false,
       typeErrors: [],
-      machineImage:"",
+      machineImage: "",
       binaryData: "",
+      imageBinaryData: null,
+
+      fileImage:null,
 
       selectedMachine: [],
       item: null,
@@ -396,24 +410,9 @@ export default {
     tablePreventivMachineDetail,
   },
   methods: {
-    async previewImage(file) {
-  if (file) {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      this.image = reader.result;
-    };
-
-    if (this.image === '') {
-      reader.readAsDataURL(file);
-    } else {
-      this.clearImage();
-    }
-  }
-},
-clearImage() {
-    this.image = '';
-  },
+    clearImage() {
+      this.image = "";
+    },
     sendItem(item) {
       eventBus.$emit("item-selected", item);
     },
@@ -502,28 +501,26 @@ clearImage() {
       this.minimumVerticalFeed = null;
     },
     async uploadImage() {
-      console.log("Voy a guardar la imagen")
-      const file = this.image;
-      const imageName = `${Date.now()}_${file}`;
-      console.log("El nombre es " + imageName)
-      const storageRef = ref(getStorage,'machines/'+ 'imageName');
-
+    if (this.fileImage) {
+      const storage = getStorage();
+      const storageRef = ref(storage, "MACHINES/" + this.fileImage.name);
+      
       try {
-        await uploadBytes(storageRef, file);
-        this.machineImage = await getDownloadURL(storageRef);
+        const snapshot = await uploadBytes(storageRef, this.fileImage);
+        this.machineImage = await getDownloadURL(storageRef)
+
+        console.log("La url es " + this.machineImage)
       } catch (error) {
-        console.log(error);
-        this.machineImage = "";
+        console.error("Error al subir la imagen:", error);
       }
-    },
+    }
+  },
     /**
      * Add a new machine to the database.
      * @returns {void}
      */
-    async addMachine() {
-      if(this.image != ""){
-        await this.uploadImage();
-      }
+    async addMachine() {      
+        await this.uploadImage()
       try {
         const machineData = {
           image: this.machineImage,
@@ -548,8 +545,7 @@ clearImage() {
           minimumTransversalFeed: +this.minimumTransversalFeed,
           minimumVerticalFeed: +this.minimumVerticalFeed,
         };
-
-       await machineRepository.save(machineData);
+        await machineRepository.save(machineData);
         this.inizialite();
         this.$emit("machineCreated");
       } catch (error) {
